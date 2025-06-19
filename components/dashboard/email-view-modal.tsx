@@ -5,17 +5,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Email } from "@/types";
 
 import { format } from "date-fns";
-
-export type Email = {
-  id: string;
-  subject: string;
-  from: string;
-  snippet: string;
-  body: string;
-  date: string;
-};
 
 function EmailViewModal({
   email,

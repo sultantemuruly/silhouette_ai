@@ -1,11 +1,11 @@
-// Dashboard.tsx
 "use client";
 
 import { useEffect, useState } from "react";
 import { Navbar } from "@/components/dashboard/navbar";
-import { GmailList } from "@/components/dashboard/GmailList";
+import { EmailInboxView } from "@/components/dashboard/email-inbox-view";
 import { Button } from "@/components/ui/button";
 import { AlertCircle } from "lucide-react";
+import { Loader } from "@/components/ui/loader";
 
 export default function Dashboard() {
   const [connected, setConnected] = useState<boolean | null>(null);
@@ -22,7 +22,7 @@ export default function Dashboard() {
   if (connected === null) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <div>Loading...</div>
+        <Loader loadingText={`Loading...`} />
       </div>
     );
   }
@@ -53,7 +53,7 @@ export default function Dashboard() {
           </div>
         ) : (
           <div className="px-4">
-            <GmailList />
+            <EmailInboxView />
           </div>
         )}
       </div>

@@ -1,0 +1,86 @@
+import {
+  Mail,
+  Flag,
+  Clock,
+  Star,
+  Send,
+  FileText,
+  MessageCircle,
+  AlertTriangle,
+  Trash2,
+  Archive,
+} from "lucide-react";
+import { GmailCategory } from "@/types";
+
+export const GMAIL_CATEGORIES: GmailCategory[] = [
+  {
+    id: "inbox",
+    label: "Inbox",
+    icon: <Mail className="h-4 w-4" />,
+    query: "in:inbox",
+    description: "Your main inbox messages",
+  },
+  {
+    id: "important",
+    label: "Important",
+    icon: <Flag className="h-4 w-4" />,
+    query: "is:important",
+    description: "Messages marked as important",
+  },
+  {
+    id: "snoozed",
+    label: "Snoozed",
+    icon: <Clock className="h-4 w-4" />,
+    query: "in:snoozed",
+    description: "Messages you've snoozed",
+  },
+  {
+    id: "starred",
+    label: "Starred",
+    icon: <Star className="h-4 w-4" />,
+    query: "is:starred",
+    description: "Messages you've starred",
+  },
+  {
+    id: "sent",
+    label: "Sent",
+    icon: <Send className="h-4 w-4" />,
+    query: "in:sent",
+    description: "Messages you've sent",
+  },
+  {
+    id: "drafts",
+    label: "Drafts",
+    icon: <FileText className="h-4 w-4" />,
+    query: "in:drafts",
+    description: "Your draft messages",
+  },
+  {
+    id: "chats",
+    label: "Chats",
+    icon: <MessageCircle className="h-4 w-4" />,
+    query: "in:chats",
+    description: "Chat conversations",
+  },
+  {
+    id: "spam",
+    label: "Spam",
+    icon: <AlertTriangle className="h-4 w-4" />,
+    query: "in:spam",
+    description: "Spam messages",
+  },
+  {
+    id: "trash",
+    label: "Trash",
+    icon: <Trash2 className="h-4 w-4" />,
+    query: "in:trash",
+    description: "Deleted messages",
+  },
+  {
+    id: "all",
+    label: "All Mail",
+    icon: <Archive className="h-4 w-4" />,
+    query: "in:all",
+    description: "All your messages",
+  },
+];
