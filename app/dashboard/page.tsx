@@ -1,24 +1,61 @@
+// Dashboard.tsx
+"use client";
+
+import { useEffect, useState } from "react";
 import { Navbar } from "@/components/dashboard/navbar";
 import { GmailList } from "@/components/dashboard/GmailList";
 import { Button } from "@/components/ui/button";
+import { AlertCircle } from "lucide-react";
 
 export default function Dashboard() {
+  const [connected, setConnected] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const fetchConnectionStatus = async () => {
+      const res = await fetch("/api/user/google-connected");
+      const data = await res.json();
+      setConnected(data.connected);
+    };
+    fetchConnectionStatus();
+  }, []);
+
+  if (connected === null) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div>Loading...</div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <Navbar />
-      <div>
-        <div className="flex justify-center">
-          <div>
-            In order to see your gmails please connect your google account via
-            oauth consent
+      <div className="mt-8">
+        {!connected ? (
+          <div className="min-h-screen flex items-center justify-center px-4">
+            <div className="flex flex-col items-center gap-8 text-center max-w-md">
+              <div className="w-full flex items-start gap-4 bg-yellow-100 border border-yellow-300 text-yellow-800 p-5 rounded-lg">
+                <AlertCircle className="h-6 w-6 mt-0.5 flex-shrink-0" />
+                <p className="text-base font-medium">
+                  To view your Gmail messages, please connect your Google
+                  account.
+                </p>
+              </div>
+              <a href="/api/oauth/google">
+                <Button
+                  variant="regular"
+                  className="px-8 py-3 text-base font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-md"
+                >
+                  Connect Google Account
+                </Button>
+              </a>
+            </div>
           </div>
-          <Button variant={"regular"}>
-            <a href="/api/oauth/google">Connect your Google</a>
-          </Button>
-        </div>
-        <div>
-          <GmailList />
-        </div>
+        ) : (
+          <div className="px-4">
+            <GmailList />
+          </div>
+        )}
       </div>
     </div>
   );
