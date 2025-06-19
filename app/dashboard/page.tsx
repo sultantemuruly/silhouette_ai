@@ -1,61 +1,24 @@
+// app/dashboard/page.tsx  (or pages/dashboard.tsx)
 "use client";
 
-import { useEffect, useState } from "react";
 import { Navbar } from "@/components/dashboard/navbar";
-import { EmailInboxView } from "@/components/dashboard/email-inbox-view";
-import { Button } from "@/components/ui/button";
-import { AlertCircle } from "lucide-react";
-import { Loader } from "@/components/ui/loader";
+import { ResponsiveSidebar } from "@/components/dashboard/responsive-sidebar";
+import EmailAll from "@/components/dashboard/email-all";
 
 export default function Dashboard() {
-  const [connected, setConnected] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    const fetchConnectionStatus = async () => {
-      const res = await fetch("/api/user/google-connected");
-      const data = await res.json();
-      setConnected(data.connected);
-    };
-    fetchConnectionStatus();
-  }, []);
-
-  if (connected === null) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <Loader loadingText={`Loading...`} />
-      </div>
-    );
-  }
-
   return (
-    <div>
+    <div className="min-h-screen flex flex-col">
       <Navbar />
-      <div className="mt-8">
-        {!connected ? (
-          <div className="min-h-screen flex items-center justify-center px-4">
-            <div className="flex flex-col items-center gap-8 text-center max-w-md">
-              <div className="w-full flex items-start gap-4 bg-yellow-100 border border-yellow-300 text-yellow-800 p-5 rounded-lg">
-                <AlertCircle className="h-6 w-6 mt-0.5 flex-shrink-0" />
-                <p className="text-base font-medium">
-                  To view your Gmail messages, please connect your Google
-                  account.
-                </p>
-              </div>
-              <a href="/api/oauth/google">
-                <Button
-                  variant="regular"
-                  className="px-8 py-3 text-base font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-md"
-                >
-                  Connect Google Account
-                </Button>
-              </a>
-            </div>
-          </div>
-        ) : (
-          <div className="px-4">
-            <EmailInboxView />
-          </div>
-        )}
+
+      <div className="flex flex-1">
+        {/* Left: sidebar */}
+        <ResponsiveSidebar />
+
+        {/* Right: main content (grows to fill) */}
+        <main className="flex-1 overflow-auto p-4">
+          <EmailAll />
+          {/* + future panels here */}
+        </main>
       </div>
     </div>
   );
