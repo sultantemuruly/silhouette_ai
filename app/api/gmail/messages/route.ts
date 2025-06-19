@@ -23,6 +23,25 @@ function findPlainTextBody(payload?: gmail_v1.Schema$MessagePart): string {
   return "";
 }
 
+/**
+ * Get the appropriate Gmail query based on category
+ */
+function getCategoryQuery(category: string): string {
+  const queries: Record<string, string> = {
+    inbox: "in:inbox",
+    important: "is:important",
+    snoozed: "in:snoozed",
+    starred: "is:starred",
+    sent: "in:sent",
+    drafts: "in:drafts",
+    chats: "in:chats",
+    spam: "in:spam",
+    trash: "in:trash",
+    all: "in:all",
+  };
+  return queries[category] || "in:inbox";
+}
+
 export async function GET(req: NextRequest) {
   // Authenticate user via Clerk
   const { userId } = getAuth(req);
@@ -55,16 +74,23 @@ export async function GET(req: NextRequest) {
     expiry_date: acct.expiry_date,
   });
 
-  // Parse optional pageToken for pagination
+  // Parse query parameters
   const { searchParams } = new URL(req.url);
   const pageToken = searchParams.get("pageToken") || undefined;
+  const category = searchParams.get("category") || "inbox";
+  const query = getCategoryQuery(category);
 
   // Fetch a batch of message IDs
   let listRes;
   try {
     listRes = await google
       .gmail({ version: "v1", auth: oauth2Client })
-      .users.messages.list({ userId: "me", maxResults: 200, pageToken });
+      .users.messages.list({
+        userId: "me",
+        maxResults: 200,
+        pageToken,
+        q: query,
+      });
   } catch (err: unknown) {
     console.error("Error listing messages:", err);
     const message = err instanceof Error ? err.message : "Unknown error";

@@ -6,8 +6,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-import { X } from "lucide-react";
-
 import { format } from "date-fns";
 
 export type Email = {
