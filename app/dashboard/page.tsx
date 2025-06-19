@@ -1,9 +1,10 @@
-// app/dashboard/page.tsx  (or pages/dashboard.tsx)
 "use client";
 
-import { Navbar } from "@/components/dashboard/navbar";
-import { ResponsiveSidebar } from "@/components/dashboard/responsive-sidebar";
-import EmailAll from "@/components/dashboard/email-all";
+import { Navbar } from "@/components/dashboard/bars/navbar";
+import { ResponsiveSidebar } from "@/components/dashboard/bars/responsive-sidebar";
+
+// import EmailAll from "@/components/dashboard/email-view/email-all";
+import EmailSearch from "@/components/dashboard/email-search/email-search";
 
 export default function Dashboard() {
   return (
@@ -16,7 +17,8 @@ export default function Dashboard() {
 
         {/* Right: main content (grows to fill) */}
         <main className="flex-1 overflow-auto p-4">
-          <EmailAll />
+          {/* <EmailAll /> */}
+          <EmailSearch />
           {/* + future panels here */}
         </main>
       </div>

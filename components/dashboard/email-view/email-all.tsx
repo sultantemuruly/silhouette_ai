@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { Loader } from "@/components/ui/loader";
 import { EmailInboxView } from "./email-inbox-view";
-import { Button } from "../ui/button";
+import { Button } from "../../ui/button";
 import { AlertCircle } from "lucide-react";
 
 const EmailAll: React.FC = () => {

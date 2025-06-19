@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { AlertTriangle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Loader } from "../ui/loader";
+import { Loader } from "../../ui/loader";
 import { cn } from "@/lib/utils";
 
 import EmailViewModal from "./email-view-modal";
