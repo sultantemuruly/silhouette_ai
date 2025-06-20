@@ -2,11 +2,11 @@
 
 import React, { useEffect, useState } from "react";
 import { Loader } from "@/components/ui/loader";
-import { EmailInboxView } from "./email-inbox-view";
+import { EmailMessagesView } from "./email-messages-view";
 import { Button } from "../../ui/button";
 import { AlertCircle } from "lucide-react";
 
-const EmailAll: React.FC = () => {
+const EmailAllView: React.FC = () => {
   const [connected, setConnected] = useState<boolean | null>(null);
 
   useEffect(() => {
@@ -55,11 +55,11 @@ const EmailAll: React.FC = () => {
         </div>
       ) : (
         <div className="px-4">
-          <EmailInboxView />
+          <EmailMessagesView />
         </div>
       )}
     </div>
   );
 };
 
-export default EmailAll;
+export default EmailAllView;

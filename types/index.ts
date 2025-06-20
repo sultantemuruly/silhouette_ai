@@ -14,3 +14,18 @@ export type GmailCategory = {
   query?: string;
   description?: string;
 };
+
+export type Category = "all-mail" | "smart-search" | "important";
+
+export interface CategoryState {
+  selectedCategory: Category;
+  setCategory: (category: Category) => void;
+}
+
+export interface NavItem {
+  label: string;
+  href: string;
+  icon: React.ReactNode;
+  category: Category;
+  badge?: React.ReactNode;
+}

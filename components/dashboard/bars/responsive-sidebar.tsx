@@ -1,4 +1,3 @@
-// components/dashboard/responsive-sidebar.tsx
 "use client";
 
 import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";

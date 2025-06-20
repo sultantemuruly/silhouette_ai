@@ -22,7 +22,7 @@ import { Email } from "@/types";
 import { GMAIL_CATEGORIES } from "@/constants/gmail-categories";
 import { EMPTY_MESSAGES, CATEGORY_COLORS } from "@/constants";
 
-export function EmailInboxView() {
+export function EmailMessagesView() {
   const [messages, setMessages] = useState<Email[]>([]);
   const [loading, setLoading] = useState(false);
   const [nextPageToken, setNextPageToken] = useState<string | null>(null);
@@ -122,7 +122,7 @@ export function EmailInboxView() {
                   className={cn(
                     "flex items-center justify-center space-x-2 transition-all duration-200 min-h-[2.5rem]",
                     activeCategory === category.id
-                      ? "shadow-md scale-110 bg-blue-700 hover:bg-white hover:text-primary"
+                      ? "shadow-md scale-110 bg-blue-600 hover:bg-blue-700 hover:text-white hover:scale-112"
                       : "hover:shadow-sm hover:scale-102"
                   )}
                   title={category.description}
