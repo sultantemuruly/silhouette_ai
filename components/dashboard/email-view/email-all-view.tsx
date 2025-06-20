@@ -27,7 +27,7 @@ const EmailAllView: React.FC = () => {
   if (connected === null) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <Loader loadingText="Loading..." />
+        <Loader loadingText="Loading..." additionalStyles={null} />
       </div>
     );
   }

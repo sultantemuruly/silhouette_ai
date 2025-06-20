@@ -53,10 +53,14 @@ export default function EmailSearch() {
         <Button
           onClick={handleSearch}
           disabled={loading}
-          className="flex items-center"
+          variant={`regular`}
+          className="flex justify-center items-center"
         >
-          {loading ? <Loader loadingText={null} /> : null}
-          Search
+          {loading ? (
+            <Loader loadingText={null} additionalStyles={`text-white`} />
+          ) : (
+            `Search`
+          )}
         </Button>
       </div>
 

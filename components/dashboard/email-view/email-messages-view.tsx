@@ -143,6 +143,7 @@ export function EmailMessagesView() {
           {loading && !messages.length ? (
             <Loader
               loadingText={`Loading ${currentCategory.label.toLowerCase()}...`}
+              additionalStyles={null}
             />
           ) : error ? (
             <div className="p-6 text-center space-y-3">
@@ -199,7 +200,10 @@ export function EmailMessagesView() {
               className="w-full"
             >
               {loading ? (
-                <Loader loadingText={`Loading more...`} />
+                <Loader
+                  loadingText={`Loading more...`}
+                  additionalStyles={null}
+                />
               ) : (
                 `Load more ${currentCategory.label.toLowerCase()}`
               )}
