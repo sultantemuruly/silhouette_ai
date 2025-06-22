@@ -1,11 +1,11 @@
 import React from "react";
 import { format } from "date-fns";
 import { Mail } from "lucide-react";
-import { Email } from "@/types";
+import { EmailData } from "@/types";
 
 type Props = {
-  messages: Email[];
-  onEmailSelect: (email: Email) => void;
+  messages: EmailData[];
+  onEmailSelect: (email: EmailData) => void;
 };
 
 export default function EmailPreviewList({ messages, onEmailSelect }: Props) {

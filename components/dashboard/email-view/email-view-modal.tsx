@@ -5,7 +5,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Email } from "@/types";
+import { EmailData } from "@/types";
 
 import { format } from "date-fns";
 
@@ -13,7 +13,7 @@ function EmailViewModal({
   email,
   onClose,
 }: {
-  email: Email | null;
+  email: EmailData | null;
   onClose: () => void;
 }) {
   if (!email) return null;

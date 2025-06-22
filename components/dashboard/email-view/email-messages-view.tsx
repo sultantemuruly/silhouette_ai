@@ -18,16 +18,16 @@ import { cn } from "@/lib/utils";
 import EmailViewModal from "./email-view-modal";
 import EmailPreviewList from "./email-preview-list";
 
-import { Email } from "@/types";
+import { EmailData } from "@/types";
 import { GMAIL_CATEGORIES } from "@/constants/gmail-categories";
 import { EMPTY_MESSAGES, CATEGORY_COLORS } from "@/constants";
 
 export function EmailMessagesView() {
-  const [messages, setMessages] = useState<Email[]>([]);
+  const [messages, setMessages] = useState<EmailData[]>([]);
   const [loading, setLoading] = useState(false);
   const [nextPageToken, setNextPageToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [openEmail, setOpenEmail] = useState<Email | null>(null);
+  const [openEmail, setOpenEmail] = useState<EmailData | null>(null);
   const [activeCategory, setActiveCategory] = useState<string>("inbox");
 
   const categoryStyles = CATEGORY_COLORS[activeCategory] || {};

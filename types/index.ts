@@ -1,4 +1,4 @@
-export type Email = {
+export type EmailData = {
   id: string;
   subject: string;
   from: string;
@@ -6,6 +6,65 @@ export type Email = {
   body: string;
   date: string;
 };
+
+export interface EmailMatch {
+  id: string;
+  subject: string;
+  from: string;
+  date: string;
+  to: string;
+  body: string;
+  preview?: string;
+}
+
+export interface SearchResponse {
+  matches: EmailMatch[];
+  summary: string;
+  totalEmailsProcessed: number;
+  validEmailsForSearch: number;
+}
+
+export interface EmailSummary {
+  summary: string;
+  keyPoints: string[];
+  actionItems?: string[];
+  sentiment: "positive" | "negative" | "neutral";
+  urgencyLevel: "low" | "medium" | "high";
+  emailCount: number;
+  dateRange?: string;
+  topSenders?: string[];
+  urgentEmails?: string[];
+}
+
+export interface SummaryOptions {
+  maxLength?: number;
+  focusAreas?: string[];
+  tone?: "professional" | "casual" | "technical";
+  includeKeyPoints?: boolean;
+  includeActionItems?: boolean;
+}
+
+export interface SummaryResult {
+  summary: string;
+  keyPoints: string[];
+  actionItems?: string[];
+  sentiment?: "positive" | "negative" | "neutral";
+  urgencyLevel?: "low" | "medium" | "high";
+}
+
+export interface EmailSummaryOptions extends SummaryOptions {
+  includeContacts?: boolean;
+  groupByThread?: boolean;
+  prioritizeRecent?: boolean;
+}
+
+export interface EmailSummaryResult extends SummaryResult {
+  emailCount: number;
+  dateRange?: string;
+  topSenders?: string[];
+  commonTopics?: string[];
+  urgentEmails?: string[];
+}
 
 export type GmailCategory = {
   id: string;
