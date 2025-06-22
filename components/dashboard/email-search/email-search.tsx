@@ -10,6 +10,17 @@ import { EmailSummarySection } from "./email-summary-section";
 import { EmailMatch, SearchResponse, EmailSummary } from "@/types";
 import { EmailResultsSection } from "./email-results-sections";
 
+async function checkMeaning(query: string): Promise<boolean> {
+  const res = await fetch("/api/utils/check-query", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ query }),
+  });
+  if (!res.ok) return false;
+  const { isMeaningful } = await res.json();
+  return isMeaningful;
+}
+
 export default function EmailSearch() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<EmailMatch[]>([]);
@@ -24,6 +35,16 @@ export default function EmailSearch() {
 
     setLoading(true);
     setError(null);
+
+    const ok = await checkMeaning(query);
+    if (!ok) {
+      setError(
+        "Your search looks like random characters. Please use real words."
+      );
+      setLoading(false);
+      return;
+    }
+
     setResults([]);
     setEmailSummary(null);
 
