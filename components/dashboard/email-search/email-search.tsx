@@ -7,8 +7,9 @@ import { Loader } from "@/components/ui/loader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmailSummarySection } from "./email-summary-section";
 
-import { EmailMatch, SearchResponse, EmailSummary } from "@/types";
+import { EmailMatch, SearchResponse, EmailSummary, EmailData } from "@/types";
 import { EmailResultsSection } from "./email-results-sections";
+import { EmailViewModal } from "../email-view/email-view-modal";
 
 async function checkMeaning(query: string): Promise<boolean> {
   const res = await fetch("/api/utils/check-query", {
@@ -29,6 +30,7 @@ export default function EmailSearch() {
   const [summarizing, setSummarizing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showEmails, setShowEmails] = useState(true);
+  const [openEmail, setOpenEmail] = useState<EmailData | null>(null);
 
   const handleSearch = async () => {
     if (!query.trim()) return;
@@ -153,8 +155,20 @@ export default function EmailSearch() {
           showEmails={showEmails}
           setShowEmails={setShowEmails}
           handleSummarize={handleSummarize}
+          onEmailSelect={(match: EmailMatch) => {
+            setOpenEmail({
+              id: match.id,
+              subject: match.subject,
+              from: match.from,
+              date: match.date,
+              snippet: match.preview || match.body.substring(0, 300),
+              body: match.body,
+            });
+          }}
         />
       )}
+
+      <EmailViewModal email={openEmail} onClose={() => setOpenEmail(null)} />
     </div>
   );
 }

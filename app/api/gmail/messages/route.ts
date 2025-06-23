@@ -6,20 +6,21 @@ import { google_accounts } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
 /**
- * Recursively search payload parts for the first text/plain body.
+ * Recursively extract text/html body from Gmail payload.
  */
-function findPlainTextBody(payload?: gmail_v1.Schema$MessagePart): string {
+function findHtmlBody(payload?: gmail_v1.Schema$MessagePart): string {
   if (!payload) return "";
-  if (payload.mimeType === "text/plain" && payload.body?.data) {
+
+  if (payload.mimeType === "text/html" && payload.body?.data) {
     return Buffer.from(payload.body.data, "base64").toString("utf-8");
   }
+
   const parts = payload.parts ?? [];
   for (const part of parts) {
-    const result = findPlainTextBody(part);
-    if (result) {
-      return result;
-    }
+    const result = findHtmlBody(part);
+    if (result) return result;
   }
+
   return "";
 }
 
@@ -118,8 +119,7 @@ export async function GET(req: NextRequest) {
       const date = headers.find((h) => h.name === "Date")?.value || "";
       const snippet = msg.data.snippet || "";
 
-      // Extract full plain-text body
-      const body = findPlainTextBody(msg.data.payload);
+      const body = findHtmlBody(msg.data.payload);
 
       return { id: m.id!, subject, from, date, snippet, body };
     })

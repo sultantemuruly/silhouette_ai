@@ -1,7 +1,8 @@
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader } from "@/components/ui/loader";
-
+import { EmailPreviewList } from "../email-view/email-preview-list";
 import { EmailMatch, EmailSummary } from "@/types";
 
 interface EmailResultsSectionProps {
@@ -11,6 +12,7 @@ interface EmailResultsSectionProps {
   showEmails: boolean;
   setShowEmails: (show: boolean) => void;
   handleSummarize: () => void;
+  onEmailSelect: (email: EmailMatch) => void; // Handler for selected email
 }
 
 export const EmailResultsSection = ({
@@ -20,7 +22,18 @@ export const EmailResultsSection = ({
   showEmails,
   setShowEmails,
   handleSummarize,
+  onEmailSelect,
 }: EmailResultsSectionProps) => {
+  // Convert EmailMatch[] to EmailData[] for EmailPreviewList
+  const messages = results.map((email) => ({
+    id: email.id,
+    subject: email.subject,
+    from: email.from,
+    date: email.date,
+    snippet: email.preview || email.body.substring(0, 300),
+    body: email.body,
+  }));
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -52,30 +65,13 @@ export const EmailResultsSection = ({
 
       {showEmails && (
         <CardContent>
-          <div className="space-y-4">
-            {results.map((email) => (
-              <div
-                key={email.id}
-                className="border rounded-lg p-4 hover:shadow-md transition-shadow"
-              >
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-semibold text-lg line-clamp-2">
-                    {email.subject}
-                  </h3>
-                  <span className="text-sm text-gray-500 whitespace-nowrap ml-2">
-                    {new Date(email.date).toLocaleDateString()}
-                  </span>
-                </div>
-                <p className="text-sm text-gray-600 mb-3">
-                  <strong>From:</strong> {email.from}
-                </p>
-                <div className="max-h-32 overflow-auto text-sm text-gray-700 bg-gray-50 p-3 rounded">
-                  {email.preview || email.body.substring(0, 300)}
-                  {email.body.length > 300 && "..."}
-                </div>
-              </div>
-            ))}
-          </div>
+          <EmailPreviewList
+            messages={messages}
+            onEmailSelect={(data) => {
+              const match = results.find((e) => e.id === data.id);
+              if (match) onEmailSelect(match);
+            }}
+          />
         </CardContent>
       )}
     </Card>

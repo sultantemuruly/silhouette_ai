@@ -8,7 +8,7 @@ type Props = {
   onEmailSelect: (email: EmailData) => void;
 };
 
-export default function EmailPreviewList({ messages, onEmailSelect }: Props) {
+export function EmailPreviewList({ messages, onEmailSelect }: Props) {
   return (
     <ul className="divide-y divide-border/50">
       {messages.map((email) => (

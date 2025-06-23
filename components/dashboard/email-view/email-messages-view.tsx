@@ -15,8 +15,8 @@ import { Badge } from "@/components/ui/badge";
 import { Loader } from "../../ui/loader";
 import { cn } from "@/lib/utils";
 
-import EmailViewModal from "./email-view-modal";
-import EmailPreviewList from "./email-preview-list";
+import { EmailViewModal } from "./email-view-modal";
+import { EmailPreviewList } from "./email-preview-list";
 
 import { EmailData } from "@/types";
 import { GMAIL_CATEGORIES } from "@/constants/gmail-categories";

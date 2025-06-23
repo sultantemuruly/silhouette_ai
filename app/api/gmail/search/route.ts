@@ -253,11 +253,7 @@ export async function POST(req: NextRequest) {
             const headers = msg.data.payload?.headers ?? [];
             const metadata = extractEmailMetadata(headers, m.id!);
             const content = findPlainTextBody(msg.data.payload);
-
-            return new Document({
-              pageContent: content,
-              metadata,
-            });
+            return new Document({ pageContent: content, metadata });
           } catch (error) {
             console.error(`Error processing email ${m.id}:`, error);
             return null;

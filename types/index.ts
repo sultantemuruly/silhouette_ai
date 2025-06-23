@@ -4,6 +4,7 @@ export type EmailData = {
   from: string;
   snippet: string;
   body: string;
+  htmlBody?: string;
   date: string;
 };
 
@@ -14,6 +15,7 @@ export interface EmailMatch {
   date: string;
   to: string;
   body: string;
+  htmlBody?: string;
   preview?: string;
 }
 
