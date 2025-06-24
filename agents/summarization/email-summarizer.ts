@@ -3,8 +3,8 @@ import {
   EmailSummaryOptions,
   EmailMatch,
   EmailSummaryResult,
-  SummaryOptions,
 } from "@/types";
+import { SummaryOptions } from "./base-summarizer";
 
 export class EmailSummarizationAgent extends BaseSummarizationAgent {
   constructor() {
@@ -32,6 +32,7 @@ export class EmailSummarizationAgent extends BaseSummarizationAgent {
     // Create email-specific options
     const summaryOptions: SummaryOptions = {
       ...options,
+      userQuery: query,
       focusAreas: [
         `emails related to: ${query}`,
         "important dates and deadlines",

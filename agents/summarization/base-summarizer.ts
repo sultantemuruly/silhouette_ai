@@ -2,7 +2,12 @@ import { ChatOpenAI } from "@langchain/openai";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { RunnableSequence } from "@langchain/core/runnables";
-import { SummaryOptions, SummaryResult } from "@/types";
+import { SummaryOptions as BaseSummaryOptions, SummaryResult } from "@/types";
+
+// Extend SummaryOptions to include userQuery
+export interface SummaryOptions extends BaseSummaryOptions {
+  userQuery?: string;
+}
 
 export class BaseSummarizationAgent {
   private llm: ChatOpenAI;
@@ -13,19 +18,23 @@ export class BaseSummarizationAgent {
       temperature,
       maxRetries: 3,
       timeout: 30000,
-      modelName: "gpt-3.5-turbo",
+      modelName: "gpt-4",
     });
     this.outputParser = new StringOutputParser();
   }
 
   private createSummaryPrompt(options: SummaryOptions): PromptTemplate {
     return PromptTemplate.fromTemplate(`
-You are an expert summarization assistant. Your task is to create clear, concise, and actionable summaries.
+You are an expert summarization assistant. Your task is to create clear, concise, and actionable summaries of emails for a user.
+
+USER'S ORIGINAL QUERY:
+{userQuery}
 
 CONTENT TO SUMMARIZE:
 {content}
 
 INSTRUCTIONS:
+- Infer the user's intent from their query and focus the summary on what the user is likely looking for.
 - Create a {tone} summary in approximately {maxLength} words
 - Focus on: {focusAreas}
 - Highlight the most important information
@@ -67,6 +76,7 @@ Ensure the JSON is valid and properly formatted.
 
       const result = await chain.invoke({
         content,
+        userQuery: options.userQuery || "",
         maxLength: options.maxLength || 200,
         tone: options.tone || "professional",
         focusAreas:

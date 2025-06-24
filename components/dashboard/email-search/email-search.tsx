@@ -43,11 +43,7 @@ export default function EmailSearch() {
   const [nextPageToken, setNextPageToken] = useState<string | undefined>();
   const [hasMore, setHasMore] = useState(false);
   const [totalCount, setTotalCount] = useState<number | undefined>();
-  const [pagination, setPagination] = useState<PaginationState>({
-    currentPage: 1,
-    totalPages: 1,
-    pageSize: 50,
-  });
+  const pageSize = 50;
 
   const handleSearch = async (isLoadMore = false) => {
     if (!isLoadMore && !query.trim()) return;
@@ -83,7 +79,7 @@ export default function EmailSearch() {
         body: JSON.stringify({
           queryText: searchQuery,
           pageToken: isLoadMore ? nextPageToken : undefined,
-          limit: pagination.pageSize,
+          limit: pageSize,
         }),
       });
 
@@ -98,16 +94,6 @@ export default function EmailSearch() {
       setNextPageToken(data.nextPageToken);
       setHasMore(data.hasMore);
       setTotalCount(data.totalCount);
-
-      // Update pagination
-      const newTotalLoaded = isLoadMore
-        ? allResults.length + data.matches.length
-        : data.matches.length;
-
-      setPagination((prev) => ({
-        ...prev,
-        totalPages: Math.ceil(newTotalLoaded / prev.pageSize),
-      }));
 
       // Auto-summarize for new searches
       if (!isLoadMore && data.matches.length > 0) {
@@ -151,24 +137,10 @@ export default function EmailSearch() {
     }
   };
 
-  const getPaginatedResults = () => {
-    const start = (pagination.currentPage - 1) * pagination.pageSize;
-    return allResults.slice(start, start + pagination.pageSize);
-  };
-
-  const handlePageChange = (page: number) => {
-    setPagination((prev) => ({ ...prev, currentPage: page }));
-  };
-
   const getBatchInfo = () => {
     if (allResults.length === 0) return null;
 
-    const showingCount = Math.min(
-      pagination.currentPage * pagination.pageSize,
-      allResults.length
-    );
-
-    return `Showing ${showingCount} of ${totalCount || "many"} emails`;
+    return `Loaded ${allResults.length} of ${totalCount || "many"} matching emails`;
   };
 
   return (
@@ -208,7 +180,7 @@ export default function EmailSearch() {
               </Badge>
             )}
 
-            {hasMore && (
+            {hasMore ? (
               <Button
                 onClick={() => handleSearch(true)}
                 disabled={loadingMore}
@@ -218,9 +190,13 @@ export default function EmailSearch() {
                 {loadingMore ? (
                   <Loader loadingText="Loading..." additionalStyles={null} />
                 ) : (
-                  "Load More Emails"
+                  "Search More"
                 )}
               </Button>
+            ) : (
+              allResults.length > 0 && (
+                <span className="text-gray-500 text-sm">Nothing to search</span>
+              )
             )}
           </div>
 
@@ -232,6 +208,15 @@ export default function EmailSearch() {
         </CardContent>
       </Card>
 
+      {/* Summarizing loader banner */}
+      {summarizing && (
+        <div className="w-full flex justify-center items-center mb-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg px-6 py-3 flex items-center gap-3">
+            <span className="text-blue-900 font-medium">Summarizing your search results...</span>
+          </div>
+        </div>
+      )}
+
       {emailSummary && (
         <EmailSummarySection
           emailSummary={emailSummary}
@@ -241,15 +226,13 @@ export default function EmailSearch() {
 
       {allResults.length > 0 && (
         <EmailResultsSection
-          results={getPaginatedResults()}
+          results={allResults}
           allResults={allResults}
           emailSummary={emailSummary}
           summarizing={summarizing}
           showEmails={showEmails}
           setShowEmails={setShowEmails}
           handleSummarize={handleSummarize}
-          pagination={pagination}
-          onPageChange={handlePageChange}
           onEmailSelect={(match) =>
             setOpenEmail({
               id: match.id,

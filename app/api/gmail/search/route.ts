@@ -152,6 +152,28 @@ async function fetchMessagesWithPagination(
   }
 }
 
+/**
+ * Extracts main keywords from a natural language query.
+ * For now, uses a simple regex to find the longest word or capitalized words.
+ * In production, you could use an LLM or NLP library for better results.
+ */
+function extractKeywords(query: string): string {
+  // If the query is a question or long sentence, try to extract main words
+  // Remove common question words
+  const stopwords = [
+    "what", "whats", "who", "where", "when", "why", "how", "is", "are", "the", "a", "an", "with", "about", "on", "in", "for", "to", "of", "do", "does", "did", "going"
+  ];
+  let cleaned = query.toLowerCase().replace(/[?.,!]/g, "");
+  let words = cleaned.split(/\s+/).filter(w => !stopwords.includes(w) && w.length > 2);
+  // If nothing left, fallback to all words
+  if (words.length === 0) words = cleaned.split(/\s+/);
+  // If still nothing, fallback to original query
+  if (words.length === 0) return query;
+  // Return the most likely keyword (longest word or all joined)
+  // For now, join all remaining words
+  return words.join(" ");
+}
+
 export async function POST(req: NextRequest) {
   try {
     // 1. Authentication
@@ -173,7 +195,12 @@ export async function POST(req: NextRequest) {
     }
 
     const { queryText, pageToken, limit = 50 } = requestBody;
-    const preciseQuery = `in:all "${queryText}"`;
+    // Preprocess query: if it's a question or sentence, extract keywords
+    let searchQuery = queryText;
+    if (/[?]/.test(queryText) || queryText.split(" ").length > 3) {
+      searchQuery = extractKeywords(queryText);
+    }
+    const preciseQuery = `in:all "${searchQuery}"`;
 
     if (
       !queryText ||
@@ -286,6 +313,10 @@ export async function POST(req: NextRequest) {
       `Filtered to ${validDocs.length} valid documents from ${allDocs.length} total`
     );
 
+    // Limit the number of emails processed for embeddings/vector search to avoid context length errors
+    const MAX_DOCS_FOR_EMBEDDING = 40;
+    const docsForEmbedding = validDocs.slice(0, MAX_DOCS_FOR_EMBEDDING);
+
     if (validDocs.length === 0) {
       return NextResponse.json({
         matches: [],
@@ -313,12 +344,12 @@ export async function POST(req: NextRequest) {
       try {
         console.log("Attempting to use MemoryVectorStore...");
         const vectorStore = await MemoryVectorStore.fromDocuments(
-          validDocs,
+          docsForEmbedding,
           embeddings
         );
         topDocs = await vectorStore.similaritySearch(
-          queryText.trim(),
-          Math.min(validDocs.length, 10)
+          searchQuery.trim(),
+          Math.min(docsForEmbedding.length, 10)
         );
         console.log("MemoryVectorStore search successful");
       } catch (memoryStoreError) {
@@ -326,10 +357,10 @@ export async function POST(req: NextRequest) {
         console.error("MemoryVectorStore error:", memoryStoreError);
 
         topDocs = await performSimilaritySearch(
-          validDocs,
-          queryText.trim(),
+          docsForEmbedding,
+          searchQuery.trim(),
           embeddings,
-          Math.min(validDocs.length, 10)
+          Math.min(docsForEmbedding.length, 10)
         );
         console.log("Fallback similarity search successful");
       }
@@ -350,7 +381,7 @@ export async function POST(req: NextRequest) {
               })`
             : " (showing first batch)";
 
-          const prompt = `User searched for: "${queryText.trim()}"\n\nHere are the most relevant emails found${batchInfo}:\n\n${topDocs
+          const prompt = `User searched for: "${searchQuery.trim()}"\n\nHere are the most relevant emails found${batchInfo}:\n\n${topDocs
             .map(
               (d, i) =>
                 `${i + 1}. Subject: ${d.metadata.subject}\n` +
@@ -389,7 +420,7 @@ export async function POST(req: NextRequest) {
             : " from the first 50 emails";
           summary = `Found ${
             topDocs.length
-          } relevant emails matching your search for "${queryText.trim()}"${batchInfo}.${
+          } relevant emails matching your search for "${searchQuery.trim()}"${batchInfo}.${
             nextPageToken ? " More emails are available to search." : ""
           }`;
         }
