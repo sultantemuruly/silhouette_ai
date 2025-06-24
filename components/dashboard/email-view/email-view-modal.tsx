@@ -1,49 +1,69 @@
-import { Separator } from "@/components/ui/separator";
+import React from "react";
 import {
   Dialog,
-  DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogContent,
+  DialogFooter,
 } from "@/components/ui/dialog";
-import { EmailData } from "@/types";
+import { Button } from "@/components/ui/button";
+import type { EmailData } from "@/types";
+import { Loader } from "@/components/ui/loader";
 
-import { format } from "date-fns";
+interface EmailViewModalProps {
+  preview: EmailData | null;
+  email: EmailData | null;
+  loading: boolean;
+  error: string | null;
+  onClose: () => void;
+}
 
 export function EmailViewModal({
+  preview,
   email,
+  loading,
+  error,
   onClose,
-}: {
-  email: EmailData | null;
-  onClose: () => void;
-}) {
-  if (!email) return null;
+}: EmailViewModalProps) {
+  if (!preview) return null;
 
   return (
-    <Dialog open={!!email} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="w-full sm:max-w-5xl max-h-[90vh] flex flex-col px-4 sm:px-8">
-        <DialogHeader>
-          <div className="flex justify-between items-center">
-            <DialogTitle className="text-xl">{email.subject}</DialogTitle>
-          </div>
-        </DialogHeader>
-        <div className="space-y-4 overflow-auto">
-          <div className="flex flex-col sm:flex-row justify-between items-center">
-            <div>
-              <p className="font-medium text-primary">{email.from}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">
-                {format(new Date(email.date), "PPpp")}
-              </p>
-            </div>
-          </div>
-          <Separator />
-          <div
-            className="prose prose-sm dark:prose-invert max-w-none"
-            dangerouslySetInnerHTML={{ __html: email.body }}
-          />
+    <Dialog open onOpenChange={onClose}>
+      {/* Center modal with padding */}
+      <div className="fixed inset-0 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl shadow-lg w-full max-w-3xl overflow-hidden">
+          <DialogHeader className="p-6 border-b">
+            <DialogTitle className="text-lg font-semibold">
+              {loading ? "Loading…" : email?.subject || preview.subject}
+            </DialogTitle>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {preview.from} —{" "}
+              {loading
+                ? ""
+                : new Date(email?.date || preview.date).toLocaleString()}
+            </p>
+          </DialogHeader>
+
+          <DialogContent className="p-6 max-h-[70vh] overflow-auto">
+            {loading ? (
+              <Loader loadingText="Fetching email…" additionalStyles={null} />
+            ) : error ? (
+              <p className="text-red-600">{error}</p>
+            ) : (
+              <div
+                className="prose max-w-none"
+                dangerouslySetInnerHTML={{ __html: email?.body || "" }}
+              />
+            )}
+          </DialogContent>
+
+          <DialogFooter className="p-6 border-t flex justify-end">
+            <Button variant="secondary" onClick={onClose}>
+              Close
+            </Button>
+          </DialogFooter>
         </div>
-      </DialogContent>
+      </div>
     </Dialog>
   );
 }

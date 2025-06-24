@@ -2,6 +2,10 @@ export const EMPTY_MESSAGES: Record<
   string,
   { title: string; description: string }
 > = {
+  all: {
+    title: "No messages found",
+    description: "All your messages from every folder would appear here",
+  },
   inbox: {
     title: "Your inbox is empty",
     description: "No new messages to read",
@@ -38,10 +42,6 @@ export const EMPTY_MESSAGES: Record<
     title: "Trash is empty",
     description: "Deleted messages will appear here for 30 days",
   },
-  all: {
-    title: "No messages found",
-    description: "All your messages from every folder would appear here",
-  },
 };
 
 export const CATEGORY_COLORS: Record<
@@ -53,6 +53,12 @@ export const CATEGORY_COLORS: Record<
     emptyBg?: string;
   }
 > = {
+  all: {
+    bg: "bg-blue-600/10",
+    text: "text-blue-700",
+    iconColor: "text-muted-foreground",
+    emptyBg: "bg-muted/50",
+  },
   inbox: {
     bg: "bg-primary/10",
     text: "text-primary",

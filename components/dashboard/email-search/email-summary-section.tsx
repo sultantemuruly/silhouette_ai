@@ -49,9 +49,11 @@ export const EmailSummarySection = ({
             {emailSummary.urgencyLevel} priority
           </Badge>
         </CardTitle>
-        {summarizing && (
-          <Loader loadingText="Analyzing..." additionalStyles={null} />
-        )}
+        <div>
+          {summarizing && (
+            <Loader loadingText="Analyzing..." additionalStyles={null} />
+          )}
+        </div>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Main Summary */}

@@ -23,9 +23,10 @@ export async function POST(req: NextRequest) {
       emails,
       query || "email search results",
       {
-        maxLength: 300,
+        maxLength: 250,
         tone: "professional",
-        includeContacts: true,
+        includeContacts: false,
+        
       }
     );
 
