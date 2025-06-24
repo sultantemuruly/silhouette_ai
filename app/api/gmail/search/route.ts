@@ -40,36 +40,6 @@ function findPlainTextBody(payload?: gmail_v1.Schema$MessagePart): string {
 }
 
 /**
- * Fetches all messages matching query (pages through results).
- */
-async function fetchAllMessages(
-  gmail: gmail_v1.Gmail,
-  query: string
-): Promise<gmail_v1.Schema$Message[]> {
-  let pageToken: string | undefined;
-  const all: gmail_v1.Schema$Message[] = [];
-
-  try {
-    do {
-      const res = await gmail.users.messages.list({
-        userId: "me",
-        q: query,
-        maxResults: 500,
-        pageToken,
-      });
-      const msgs = res.data.messages ?? [];
-      all.push(...msgs);
-      pageToken = res.data.nextPageToken || undefined;
-    } while (pageToken);
-  } catch (error) {
-    console.error("Error fetching messages:", error);
-    throw new Error("Failed to fetch emails from Gmail");
-  }
-
-  return all;
-}
-
-/**
  * Extract and clean metadata from email headers
  */
 function extractEmailMetadata(
@@ -150,6 +120,38 @@ async function performSimilaritySearch(
   }
 }
 
+/**
+ * Fetches messages with pagination support
+ */
+async function fetchMessagesWithPagination(
+  gmail: gmail_v1.Gmail,
+  query: string,
+  limit: number = 50,
+  pageToken?: string
+): Promise<{
+  messages: gmail_v1.Schema$Message[];
+  nextPageToken?: string;
+  totalCount?: number;
+}> {
+  try {
+    const res = await gmail.users.messages.list({
+      userId: "me",
+      q: query,
+      maxResults: limit,
+      pageToken,
+    });
+
+    return {
+      messages: res.data.messages ?? [],
+      nextPageToken: res.data.nextPageToken || undefined,
+      totalCount: res.data.resultSizeEstimate || undefined,
+    };
+  } catch (error) {
+    console.error("Error fetching messages:", error);
+    throw new Error("Failed to fetch emails from Gmail");
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     // 1. Authentication
@@ -170,7 +172,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { queryText } = requestBody.queryText;
+    const { queryText, pageToken, limit = 50 } = requestBody;
     const preciseQuery = `in:all "${queryText}"`;
 
     if (
@@ -222,48 +224,58 @@ export async function POST(req: NextRequest) {
 
     const gmail = google.gmail({ version: "v1", auth: oauth2Client });
 
-    // 5. Fetch all messages (limit to recent messages for better performance)
-    console.log("Fetching emails...");
-    const metaList = await fetchAllMessages(gmail, preciseQuery);
+    // 5. Fetch messages with pagination
+    console.log(
+      `Fetching emails... (limit: ${limit}, pageToken: ${pageToken || "none"})`
+    );
+    const {
+      messages: metaList,
+      nextPageToken,
+      totalCount,
+    } = await fetchMessagesWithPagination(
+      gmail,
+      preciseQuery,
+      limit,
+      pageToken
+    );
 
     if (metaList.length === 0) {
       return NextResponse.json({
         matches: [],
-        summary: "No emails found in your Gmail account.",
+        summary: pageToken
+          ? "No more emails found."
+          : "No emails found in your Gmail account.",
+        nextPageToken: undefined,
+        totalCount: 0,
+        currentBatch: 0,
+        hasMore: false,
       });
     }
 
     console.log(`Found ${metaList.length} emails, processing...`);
 
-    // 6. Load full email content and build Documents (process in batches)
-    const batchSize = 50;
+    // 6. Load full email content
     const allDocs: Document[] = [];
+    const batchPromises = metaList.map(async (m) => {
+      try {
+        const msg = await gmail.users.messages.get({
+          userId: "me",
+          id: m.id!,
+          format: "full",
+        });
 
-    for (let i = 0; i < metaList.length; i += batchSize) {
-      const batch = metaList.slice(i, i + batchSize);
+        const headers = msg.data.payload?.headers ?? [];
+        const metadata = extractEmailMetadata(headers, m.id!);
+        const content = findPlainTextBody(msg.data.payload);
+        return new Document({ pageContent: content, metadata });
+      } catch (error) {
+        console.error(`Error processing email ${m.id}:`, error);
+        return null;
+      }
+    });
 
-      const batchDocs = await Promise.all(
-        batch.map(async (m) => {
-          try {
-            const msg = await gmail.users.messages.get({
-              userId: "me",
-              id: m.id!,
-              format: "full",
-            });
-
-            const headers = msg.data.payload?.headers ?? [];
-            const metadata = extractEmailMetadata(headers, m.id!);
-            const content = findPlainTextBody(msg.data.payload);
-            return new Document({ pageContent: content, metadata });
-          } catch (error) {
-            console.error(`Error processing email ${m.id}:`, error);
-            return null;
-          }
-        })
-      );
-
-      allDocs.push(...(batchDocs.filter((doc) => doc !== null) as Document[]));
-    }
+    const batchDocs = await Promise.all(batchPromises);
+    allDocs.push(...(batchDocs.filter((doc) => doc !== null) as Document[]));
 
     // 7. Filter documents with valid content for embedding
     const validDocs = allDocs.filter((doc) =>
@@ -279,6 +291,10 @@ export async function POST(req: NextRequest) {
         matches: [],
         summary:
           "No emails found with sufficient text content to search through.",
+        nextPageToken,
+        totalCount,
+        currentBatch: metaList.length,
+        hasMore: !!nextPageToken,
       });
     }
 
@@ -290,7 +306,7 @@ export async function POST(req: NextRequest) {
       console.log("Creating embeddings...");
       const embeddings = new OpenAIEmbeddings({
         maxRetries: 3,
-        timeout: 60000, // Increased timeout
+        timeout: 60000,
       });
 
       // Try MemoryVectorStore first, fallback to custom implementation
@@ -300,18 +316,20 @@ export async function POST(req: NextRequest) {
           validDocs,
           embeddings
         );
-        topDocs = await vectorStore.similaritySearch(queryText.trim(), 5);
+        topDocs = await vectorStore.similaritySearch(
+          queryText.trim(),
+          Math.min(validDocs.length, 10)
+        );
         console.log("MemoryVectorStore search successful");
       } catch (memoryStoreError) {
         console.log("MemoryVectorStore failed, using fallback method...");
         console.error("MemoryVectorStore error:", memoryStoreError);
 
-        // Fallback to custom similarity search
         topDocs = await performSimilaritySearch(
           validDocs,
           queryText.trim(),
           embeddings,
-          5
+          Math.min(validDocs.length, 10)
         );
         console.log("Fallback similarity search successful");
       }
@@ -326,7 +344,13 @@ export async function POST(req: NextRequest) {
             timeout: 30000,
           });
 
-          const prompt = `User searched for: "${queryText.trim()}"\n\nHere are the most relevant emails found:\n\n${topDocs
+          const batchInfo = pageToken
+            ? ` (showing results from batch ${
+                Math.floor((totalCount || 0) / limit) + 1
+              })`
+            : " (showing first batch)";
+
+          const prompt = `User searched for: "${queryText.trim()}"\n\nHere are the most relevant emails found${batchInfo}:\n\n${topDocs
             .map(
               (d, i) =>
                 `${i + 1}. Subject: ${d.metadata.subject}\n` +
@@ -339,7 +363,11 @@ export async function POST(req: NextRequest) {
             )
             .join(
               "\n\n"
-            )}\n\nPlease provide a helpful summary of these search results, highlighting the key information that matches the user's query.`;
+            )}\n\nPlease provide a helpful summary of these search results, highlighting the key information that matches the user's query. ${
+            nextPageToken
+              ? "Note that there are more emails available if the user wants to search further."
+              : ""
+          }`;
 
           const response = await chat.invoke([
             {
@@ -356,9 +384,14 @@ export async function POST(req: NextRequest) {
           summary = response.content as string;
         } catch (llmError) {
           console.error("Error generating AI summary:", llmError);
+          const batchInfo = pageToken
+            ? " from this batch"
+            : " from the first 50 emails";
           summary = `Found ${
             topDocs.length
-          } relevant emails matching your search for "${queryText.trim()}".`;
+          } relevant emails matching your search for "${queryText.trim()}"${batchInfo}.${
+            nextPageToken ? " More emails are available to search." : ""
+          }`;
         }
       }
     } catch (embeddingError) {
@@ -389,9 +422,11 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       matches: formattedMatches,
-      summary:
-        summary ||
-        `Found ${formattedMatches.length} emails matching your search.`,
+      summary,
+      nextPageToken,
+      totalCount,
+      currentBatch: metaList.length,
+      hasMore: !!nextPageToken,
       totalEmailsProcessed: allDocs.length,
       validEmailsForSearch: validDocs.length,
     });

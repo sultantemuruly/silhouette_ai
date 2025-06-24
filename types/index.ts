@@ -22,8 +22,18 @@ export interface EmailMatch {
 export interface SearchResponse {
   matches: EmailMatch[];
   summary: string;
-  totalEmailsProcessed: number;
-  validEmailsForSearch: number;
+  nextPageToken?: string;
+  totalCount?: number;
+  currentBatch: number;
+  hasMore: boolean;
+  totalEmailsProcessed?: number;
+  validEmailsForSearch?: number;
+}
+
+export interface PaginationState {
+  currentPage: number;
+  totalPages: number;
+  pageSize: number;
 }
 
 export interface EmailSummary {
