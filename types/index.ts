@@ -100,3 +100,11 @@ export interface NavItem {
   category: Category;
   badge?: React.ReactNode;
 }
+
+export interface MessagePreview {
+  id: string;
+  subject: string;
+  from: string;
+  date: string;
+  snippet: string;
+}
