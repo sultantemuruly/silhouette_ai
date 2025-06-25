@@ -161,10 +161,34 @@ function extractKeywords(query: string): string {
   // If the query is a question or long sentence, try to extract main words
   // Remove common question words
   const stopwords = [
-    "what", "whats", "who", "where", "when", "why", "how", "is", "are", "the", "a", "an", "with", "about", "on", "in", "for", "to", "of", "do", "does", "did", "going"
+    "what",
+    "whats",
+    "who",
+    "where",
+    "when",
+    "why",
+    "how",
+    "is",
+    "are",
+    "the",
+    "a",
+    "an",
+    "with",
+    "about",
+    "on",
+    "in",
+    "for",
+    "to",
+    "of",
+    "do",
+    "does",
+    "did",
+    "going",
   ];
-  let cleaned = query.toLowerCase().replace(/[?.,!]/g, "");
-  let words = cleaned.split(/\s+/).filter(w => !stopwords.includes(w) && w.length > 2);
+  const cleaned = query.toLowerCase().replace(/[?.,!]/g, "");
+  let words = cleaned
+    .split(/\s+/)
+    .filter((w) => !stopwords.includes(w) && w.length > 2);
   // If nothing left, fallback to all words
   if (words.length === 0) words = cleaned.split(/\s+/);
   // If still nothing, fallback to original query

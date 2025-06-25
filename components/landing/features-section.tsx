@@ -1,11 +1,4 @@
-import {
-  Calendar,
-  LineChart,
-  PenTool,
-  Bell,
-  Filter,
-  FileText,
-} from "lucide-react";
+import { Mail, Search, Star } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -17,40 +10,22 @@ import {
 export function FeaturesSection() {
   const features = [
     {
-      icon: <Calendar className="h-6 w-6" />,
-      title: "Email Scheduling",
+      icon: <Mail className="h-6 w-6" />,
+      title: "All Email",
       description:
-        "Schedule emails at optimal times based on recipient behavior and time zones. Set up automated follow-ups and recurring emails.",
+        "View all your emails in one place with a clean, organized layout. Easily manage and browse your entire inbox.",
     },
     {
-      icon: <PenTool className="h-6 w-6" />,
-      title: "AI Writing Assistant",
+      icon: <Search className="h-6 w-6" />,
+      title: "Smart Search",
       description:
-        "Real-time grammar correction and tone adjustment. Smart templates for common use cases to save time and improve clarity.",
+        "Ask questions and let the AI search and summarize email threads, saving you time and giving you quick insights.",
     },
     {
-      icon: <Filter className="h-6 w-6" />,
-      title: "Intelligent Prioritization",
+      icon: <Star className="h-6 w-6" />,
+      title: "Important Section",
       description:
-        "AI scans and labels emails by importance. Smart filters and visual indicators help you focus on what matters most.",
-    },
-    {
-      icon: <Bell className="h-6 w-6" />,
-      title: "Smart Notifications",
-      description:
-        "Only get notified for high-priority emails. Custom rules adapt to your workflow and learn from your behavior.",
-    },
-    {
-      icon: <LineChart className="h-6 w-6" />,
-      title: "Productivity Analytics",
-      description:
-        "Track email activity, response times, and get personalized suggestions to improve your communication efficiency.",
-    },
-    {
-      icon: <FileText className="h-6 w-6" />,
-      title: "Email Templates & Automation",
-      description:
-        "Create and save custom email templates. Set up automation rules to handle routine emails and save valuable time.",
+        "Automatically highlights important messages so you can focus on what matters most, without the clutter.",
     },
   ];
 
