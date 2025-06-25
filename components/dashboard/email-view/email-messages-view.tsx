@@ -83,6 +83,7 @@ export function EmailMessagesView() {
     setPageTokens([null]);
     setPageIndex(0);
     fetchPage(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeCategory]);
 
   const canPrev = pageIndex > 0;

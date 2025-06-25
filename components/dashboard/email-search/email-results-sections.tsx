@@ -2,10 +2,8 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader } from "@/components/ui/loader";
-import { Badge } from "@/components/ui/badge";
 import { EmailPreviewList } from "../email-view/email-preview-list";
-import { EmailMatch, EmailSummary, PaginationState } from "@/types";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { EmailMatch, EmailSummary } from "@/types";
 
 interface EmailResultsSectionProps {
   results: EmailMatch[];

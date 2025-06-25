@@ -7,13 +7,7 @@ import { Loader } from "@/components/ui/loader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EmailSummarySection } from "./email-summary-section";
 import { Badge } from "@/components/ui/badge";
-import {
-  EmailMatch,
-  SearchResponse,
-  EmailSummary,
-  EmailData,
-  PaginationState,
-} from "@/types";
+import { EmailMatch, SearchResponse, EmailSummary, EmailData } from "@/types";
 import { EmailResultsSection } from "./email-results-sections";
 import { EmailViewModal } from "../email-view/email-view-modal";
 
@@ -140,7 +134,9 @@ export default function EmailSearch() {
   const getBatchInfo = () => {
     if (allResults.length === 0) return null;
 
-    return `Loaded ${allResults.length} of ${totalCount || "many"} matching emails`;
+    return `Loaded ${allResults.length} of ${
+      totalCount || "many"
+    } matching emails`;
   };
 
   return (
@@ -212,7 +208,9 @@ export default function EmailSearch() {
       {summarizing && (
         <div className="w-full flex justify-center items-center mb-4">
           <div className="bg-blue-50 border border-blue-200 rounded-lg px-6 py-3 flex items-center gap-3">
-            <span className="text-blue-900 font-medium">Summarizing your search results...</span>
+            <span className="text-blue-900 font-medium">
+              Summarizing your search results...
+            </span>
           </div>
         </div>
       )}

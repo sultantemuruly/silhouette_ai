@@ -4,9 +4,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogContent,
-  DialogFooter,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import type { EmailData } from "@/types";
 import { Loader } from "@/components/ui/loader";
 
