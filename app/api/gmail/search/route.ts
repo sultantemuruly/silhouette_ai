@@ -201,7 +201,9 @@ function extractKeywords(query: string): string {
 /**
  * Uses LLM to generate the best Gmail search query for a user's natural language query.
  */
-async function llmGenerateGmailQuery(userQuery: string): Promise<string | null> {
+async function llmGenerateGmailQuery(
+  userQuery: string
+): Promise<string | null> {
   try {
     const chat = new ChatOpenAI({
       temperature: 0,
@@ -265,7 +267,6 @@ export async function POST(req: NextRequest) {
         searchQuery = extractKeywords(queryText);
       }
     }
-    const preciseQuery = `in:all ${searchQuery}`;
 
     if (
       !queryText ||
@@ -324,12 +325,7 @@ export async function POST(req: NextRequest) {
       messages: metaList,
       nextPageToken,
       totalCount,
-    } = await fetchMessagesWithPagination(
-      gmail,
-      'in:all',
-      limit,
-      pageToken
-    );
+    } = await fetchMessagesWithPagination(gmail, "in:all", limit, pageToken);
 
     if (metaList.length === 0) {
       return NextResponse.json({
@@ -450,22 +446,19 @@ export async function POST(req: NextRequest) {
 Here are the most relevant emails found${batchInfo}:
 
 ${topDocs
-            .map(
-              (d, i) =>
-                `${i + 1}. Subject: ${d.metadata.subject}
+  .map(
+    (d, i) =>
+      `${i + 1}. Subject: ${d.metadata.subject}
 ` +
-                `   From: ${d.metadata.from}
+      `   From: ${d.metadata.from}
 ` +
-                `   Date: ${d.metadata.date}
+      `   Date: ${d.metadata.date}
 ` +
-                `   Preview: ${d.pageContent
-                  .slice(0, 200)
-                  .replace(/\s+/g, " ")
-                  .trim()}${d.pageContent.length > 200 ? "..." : ""}`
-            )
-            .join(
-              "\n\n"
-            )}
+      `   Preview: ${d.pageContent.slice(0, 200).replace(/\s+/g, " ").trim()}${
+        d.pageContent.length > 200 ? "..." : ""
+      }`
+  )
+  .join("\n\n")}
 
 Please provide a helpful summary of these search results, highlighting the key information that matches the user's query. ${
             nextPageToken
@@ -520,7 +513,9 @@ Please provide a helpful summary of these search results, highlighting the key i
         (d.pageContent.length > 300 ? "..." : ""),
     }));
 
-    console.log(`Search completed. Found ${formattedMatches.length} matches in this batch.`);
+    console.log(
+      `Search completed. Found ${formattedMatches.length} matches in this batch.`
+    );
 
     return NextResponse.json({
       matches: formattedMatches,

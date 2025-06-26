@@ -27,7 +27,9 @@ export default function EmailImportantMessages() {
   const [listError, setListError] = useState<string | null>(null);
 
   // Modal/email state
-  const [selectedPreview, setSelectedPreview] = useState<EmailData | null>(null);
+  const [selectedPreview, setSelectedPreview] = useState<EmailData | null>(
+    null
+  );
   const [fullEmail, setFullEmail] = useState<EmailData | null>(null);
   const [loadingEmail, setLoadingEmail] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
@@ -66,13 +68,21 @@ export default function EmailImportantMessages() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          messages: messages.map((m: any) => ({
-            id: m.id,
-            subject: m.subject,
-            from: m.from,
-            date: m.date,
-            snippet: m.snippet,
-          })),
+          messages: messages.map(
+            (m: {
+              id: string;
+              subject: string;
+              from: string;
+              date: string;
+              snippet: string;
+            }) => ({
+              id: m.id,
+              subject: m.subject,
+              from: m.from,
+              date: m.date,
+              snippet: m.snippet,
+            })
+          ),
           threshold: IMPORTANCE_THRESHOLD,
           userHint: USER_HINT,
         }),
@@ -208,7 +218,10 @@ export default function EmailImportantMessages() {
         <CardContent className="p-0">
           {loadingList ? (
             <div className="flex flex-col items-center justify-center min-h-[200px]">
-              <Loader loadingText={"Scoring importance…"} additionalStyles={null} />
+              <Loader
+                loadingText={"Scoring importance…"}
+                additionalStyles={null}
+              />
             </div>
           ) : listError ? (
             <div className="p-6 text-center space-y-3">

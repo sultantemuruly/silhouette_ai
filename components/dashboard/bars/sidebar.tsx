@@ -5,7 +5,6 @@ import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Plus } from "lucide-react";
 
 import { useCategoryStore } from "@/stores/useCategoryStore";
 import { navItems } from "@/constants/bars";
