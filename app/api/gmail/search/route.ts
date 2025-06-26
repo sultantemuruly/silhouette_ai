@@ -198,6 +198,41 @@ function extractKeywords(query: string): string {
   return words.join(" ");
 }
 
+/**
+ * Uses LLM to generate the best Gmail search query for a user's natural language query.
+ */
+async function llmGenerateGmailQuery(userQuery: string): Promise<string | null> {
+  try {
+    const chat = new ChatOpenAI({
+      temperature: 0,
+      maxRetries: 2,
+      timeout: 20000,
+    });
+    const prompt = `You are an expert at searching Gmail. Given a user's natural language query, generate the most effective Gmail search query using Gmail's search operators. Only output the Gmail search string, nothing else.\n\nExamples:\nUser query: \"Any new from amazon?\"\nGmail search: from:amazon newer_than:7d\n\nUser query: \"Invoices from John last month\"\nGmail search: from:john subject:invoice after:2024/05/01 before:2024/06/01\n\nUser query: \"Did I get a password reset email?\"\nGmail search: subject:password reset\n\nUser query: \"${userQuery}\"\nGmail search:`;
+    const response = await chat.invoke([
+      {
+        role: "system",
+        content:
+          "You are an expert at searching Gmail. Given a user's natural language query, generate the most effective Gmail search query using Gmail's search operators. Only output the Gmail search string, nothing else.",
+      },
+      {
+        role: "user",
+        content: prompt,
+      },
+    ]);
+    // Extract the search string from the LLM response
+    const text = (response.content as string).trim();
+    // Only take the first line, remove any prefix
+    const match = text.match(/Gmail search:\s*(.*)/i);
+    if (match) return match[1].trim();
+    // If not, just return the whole text
+    return text;
+  } catch (err) {
+    console.error("LLM Gmail query generation failed:", err);
+    return null;
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     // 1. Authentication
@@ -222,9 +257,15 @@ export async function POST(req: NextRequest) {
     // Preprocess query: if it's a question or sentence, extract keywords
     let searchQuery = queryText;
     if (/[?]/.test(queryText) || queryText.split(" ").length > 3) {
-      searchQuery = extractKeywords(queryText);
+      // Try LLM-powered query interpreter first
+      const llmQuery = await llmGenerateGmailQuery(queryText);
+      if (llmQuery && llmQuery.length > 0) {
+        searchQuery = llmQuery;
+      } else {
+        searchQuery = extractKeywords(queryText);
+      }
     }
-    const preciseQuery = `in:all "${searchQuery}"`;
+    const preciseQuery = `in:all ${searchQuery}`;
 
     if (
       !queryText ||
