@@ -38,17 +38,21 @@ export async function GET(req: NextRequest) {
   });
   const gmail = google.gmail({ version: "v1", auth: oauth2Client });
 
-  // 4. Parse pagination
+  // 4. Parse pagination and mailCount
   const { searchParams } = new URL(req.url);
   const pageToken = searchParams.get("pageToken") || undefined;
+  // mailCount param: how many emails to fetch (default 50, min 1, max 50)
+  let mailCount = parseInt(searchParams.get("mailCount") || "50", 10);
+  if (isNaN(mailCount) || mailCount < 1) mailCount = 50;
+  if (mailCount > 50) mailCount = 50;
 
-  // 5. List message IDs (always “all”)
+  // 5. List message IDs (always "all")
   let listRes;
   try {
     listRes = await gmail.users.messages.list({
       userId: "me",
       q: "in:all",
-      maxResults: 50,
+      maxResults: mailCount,
       pageToken,
     });
   } catch (err) {

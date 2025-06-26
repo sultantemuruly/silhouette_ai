@@ -13,42 +13,37 @@ import { EmailPreviewList } from "../email-view/email-preview-list";
 import type { EmailData } from "@/types";
 import { CATEGORY_COLORS } from "@/constants";
 
-import { ImportanceAgent } from "@/agents";
-import { MessagePreview } from "@/types";
+const EMAILS_PER_PAGE = 10;
+const IMPORTANCE_THRESHOLD = 0.6;
+const USER_HINT = "";
 
 export default function EmailImportantMessages() {
+  // Pagination state
   const [pages, setPages] = useState<EmailData[][]>([]);
   const [importantPages, setImportantPages] = useState<EmailData[][]>([]);
   const [pageTokens, setPageTokens] = useState<(string | null)[]>([null]);
   const [pageIndex, setPageIndex] = useState(0);
-
   const [loadingList, setLoadingList] = useState(false);
   const [listError, setListError] = useState<string | null>(null);
 
-  const [selectedPreview, setSelectedPreview] = useState<EmailData | null>(
-    null
-  );
+  // Modal/email state
+  const [selectedPreview, setSelectedPreview] = useState<EmailData | null>(null);
   const [fullEmail, setFullEmail] = useState<EmailData | null>(null);
   const [loadingEmail, setLoadingEmail] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
 
   const activeCategory = "all";
-  const IMPORTANCE_THRESHOLD = 0.6; // adjust as needed
-  const USER_HINT = ""; // e.g. "urgent", "invoices", etc.
 
-  const importanceAgent = React.useMemo(() => new ImportanceAgent(), []);
-
+  // Fetch a page of emails and run importance agent
   const fetchPage = async (index: number) => {
     setLoadingList(true);
     setListError(null);
-
     try {
-      // 1) fetch raw previews
       const token = pageTokens[index];
       const url = new URL("/api/gmail/messages", window.location.origin);
       if (token) url.searchParams.set("pageToken", token);
       url.searchParams.set("category", activeCategory);
-
+      url.searchParams.set("mailCount", EMAILS_PER_PAGE.toString());
       const res = await fetch(url.toString());
       if (res.status === 401) {
         window.location.href = "/sign-in";
@@ -56,8 +51,6 @@ export default function EmailImportantMessages() {
       }
       if (!res.ok) throw new Error(await res.text());
       const { messages, nextPageToken } = await res.json();
-
-      // 2) store full list
       setPages((prev) => {
         const cp = [...prev];
         cp[index] = messages;
@@ -68,31 +61,26 @@ export default function EmailImportantMessages() {
         cp[index + 1] = nextPageToken;
         return cp;
       });
-
-      // 3) run importance agent
-      const previews: MessagePreview[] = messages.map(
-        (m: {
-          id: string;
-          subject: string;
-          from: string;
-          date: string;
-          snippet: string;
-        }) => ({
-          id: m.id,
-          subject: m.subject,
-          from: m.from,
-          date: m.date,
-          snippet: m.snippet,
-        })
-      );
-      const important = await importanceAgent.selectImportant(previews, {
-        threshold: IMPORTANCE_THRESHOLD,
-        userHint: USER_HINT,
+      // Run importance agent on this page's messages
+      const scoreRes = await fetch("/api/importance/score", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: messages.map((m: any) => ({
+            id: m.id,
+            subject: m.subject,
+            from: m.from,
+            date: m.date,
+            snippet: m.snippet,
+          })),
+          threshold: IMPORTANCE_THRESHOLD,
+          userHint: USER_HINT,
+        }),
       });
-
-      // 4) match back to your EmailData shape
+      if (!scoreRes.ok) throw new Error(await scoreRes.text());
+      const { important } = await scoreRes.json();
       const importantFull = messages.filter((m: { id: string }) =>
-        important.find((imp) => imp.id === m.id)
+        important.find((imp: { id: string }) => imp.id === m.id)
       );
       setImportantPages((prev) => {
         const cp = [...prev];
@@ -107,7 +95,7 @@ export default function EmailImportantMessages() {
     }
   };
 
-  // initial load & when category changes
+  // Initial load & on category change
   useEffect(() => {
     setPages([]);
     setImportantPages([]);
@@ -118,17 +106,19 @@ export default function EmailImportantMessages() {
   }, [activeCategory]);
 
   const canPrev = pageIndex > 0;
-  const canNext = Boolean(pageTokens[pageIndex + 1]);
-
+  const canNext = !!pageTokens[pageIndex + 1];
   const messages = pages[pageIndex] || [];
   const important = importantPages[pageIndex] || [];
 
-  const handlePrev = () => canPrev && setPageIndex((i) => i - 1);
+  const handlePrev = () => {
+    if (canPrev) setPageIndex((i) => i - 1);
+  };
   const handleNext = () => {
-    if (!canNext) return;
-    const next = pageIndex + 1;
-    setPageIndex(next);
-    if (!pages[next]) fetchPage(next);
+    if (canNext) {
+      const next = pageIndex + 1;
+      setPageIndex(next);
+      if (!pages[next]) fetchPage(next);
+    }
   };
 
   const loadEmail = async (preview: EmailData) => {
@@ -179,7 +169,7 @@ export default function EmailImportantMessages() {
         <div className="text-sm">
           {loadingList
             ? "Scoring importance…"
-            : `${important.length} of ${messages.length} emails are important`}
+            : `${important.length} out of ${messages.length} emails are important`}
         </div>
       </div>
 
@@ -216,8 +206,10 @@ export default function EmailImportantMessages() {
         </CardHeader>
         <Separator />
         <CardContent className="p-0">
-          {loadingList && !messages.length ? (
-            <Loader loadingText="Loading…" additionalStyles={null} />
+          {loadingList ? (
+            <div className="flex flex-col items-center justify-center min-h-[200px]">
+              <Loader loadingText={"Scoring importance…"} additionalStyles={null} />
+            </div>
           ) : listError ? (
             <div className="p-6 text-center space-y-3">
               <AlertTriangle className="mx-auto h-10 w-10 text-red-500" />

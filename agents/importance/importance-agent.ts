@@ -51,8 +51,14 @@ export class ImportanceAgent {
     // Prompt with escaped double-braces
     this.prompt = PromptTemplate.fromTemplate(
       `
-You are an assistant that scores each email’s importance from 0 (irrelevant) to 1 (critical).
-User hint: "{userHint}"
+You are an expert email assistant. Your job is to score each email's importance from 0 (irrelevant) to 1 (critical) for the user.
+
+Consider the following when scoring:
+- The subject: Is it urgent, personal, work-related, or contains keywords like "invoice", "payment", "meeting", "action required", etc.?
+- The sender: Is it from a known contact, a boss, a family member, or an automated system?
+- The snippet: Does it contain actionable information, deadlines, or requests?
+- The date: Is it recent or time-sensitive?
+- The user hint: "{userHint}"
 
 Here are the messages to score (JSON array):
 {messages}
@@ -61,6 +67,8 @@ Respond only with a JSON array of objects, e.g.:
 [
   {{ "id": "<message id>", "score": <float 0–1> }}
 ]
+
+Be strict: Only score 0.7 or above if the message is truly important or urgent. Use 0.5–0.7 for moderately important, and below 0.5 for routine or unimportant emails.
 
 Ensure valid JSON.
 `.trim()
