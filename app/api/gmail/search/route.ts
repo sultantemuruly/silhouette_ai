@@ -326,7 +326,7 @@ export async function POST(req: NextRequest) {
       totalCount,
     } = await fetchMessagesWithPagination(
       gmail,
-      preciseQuery,
+      'in:all',
       limit,
       pageToken
     );
@@ -341,12 +341,14 @@ export async function POST(req: NextRequest) {
         totalCount: 0,
         currentBatch: 0,
         hasMore: false,
+        batchSize: 0,
+        batchMatches: 0,
       });
     }
 
     console.log(`Found ${metaList.length} emails, processing...`);
 
-    // 6. Load full email content
+    // 6. Load full email content for this batch
     const allDocs: Document[] = [];
     const batchPromises = metaList.map(async (m) => {
       try {
@@ -378,9 +380,8 @@ export async function POST(req: NextRequest) {
       `Filtered to ${validDocs.length} valid documents from ${allDocs.length} total`
     );
 
-    // Limit the number of emails processed for embeddings/vector search to avoid context length errors
-    const MAX_DOCS_FOR_EMBEDDING = 40;
-    const docsForEmbedding = validDocs.slice(0, MAX_DOCS_FOR_EMBEDDING);
+    // Only search within this batch
+    const docsForEmbedding = validDocs;
 
     if (validDocs.length === 0) {
       return NextResponse.json({
@@ -391,10 +392,12 @@ export async function POST(req: NextRequest) {
         totalCount,
         currentBatch: metaList.length,
         hasMore: !!nextPageToken,
+        batchSize: metaList.length,
+        batchMatches: 0,
       });
     }
 
-    // 8. Create vector store and perform semantic search
+    // 8. Create vector store and perform semantic search within this batch
     let topDocs: Document[] = [];
     let summary = "";
 
@@ -440,18 +443,21 @@ export async function POST(req: NextRequest) {
             timeout: 30000,
           });
 
-          const batchInfo = pageToken
-            ? ` (showing results from batch ${
-                Math.floor((totalCount || 0) / limit) + 1
-              })`
-            : " (showing first batch)";
+          const batchInfo = ` (showing results from this batch of ${metaList.length} emails)`;
 
-          const prompt = `User searched for: "${searchQuery.trim()}"\n\nHere are the most relevant emails found${batchInfo}:\n\n${topDocs
+          const prompt = `User searched for: "${searchQuery.trim()}"
+
+Here are the most relevant emails found${batchInfo}:
+
+${topDocs
             .map(
               (d, i) =>
-                `${i + 1}. Subject: ${d.metadata.subject}\n` +
-                `   From: ${d.metadata.from}\n` +
-                `   Date: ${d.metadata.date}\n` +
+                `${i + 1}. Subject: ${d.metadata.subject}
+` +
+                `   From: ${d.metadata.from}
+` +
+                `   Date: ${d.metadata.date}
+` +
                 `   Preview: ${d.pageContent
                   .slice(0, 200)
                   .replace(/\s+/g, " ")
@@ -459,7 +465,9 @@ export async function POST(req: NextRequest) {
             )
             .join(
               "\n\n"
-            )}\n\nPlease provide a helpful summary of these search results, highlighting the key information that matches the user's query. ${
+            )}
+
+Please provide a helpful summary of these search results, highlighting the key information that matches the user's query. ${
             nextPageToken
               ? "Note that there are more emails available if the user wants to search further."
               : ""
@@ -480,9 +488,7 @@ export async function POST(req: NextRequest) {
           summary = response.content as string;
         } catch (llmError) {
           console.error("Error generating AI summary:", llmError);
-          const batchInfo = pageToken
-            ? " from this batch"
-            : " from the first 50 emails";
+          const batchInfo = ` from this batch of ${metaList.length} emails`;
           summary = `Found ${
             topDocs.length
           } relevant emails matching your search for "${searchQuery.trim()}"${batchInfo}.${
@@ -514,7 +520,7 @@ export async function POST(req: NextRequest) {
         (d.pageContent.length > 300 ? "..." : ""),
     }));
 
-    console.log(`Search completed. Found ${formattedMatches.length} matches.`);
+    console.log(`Search completed. Found ${formattedMatches.length} matches in this batch.`);
 
     return NextResponse.json({
       matches: formattedMatches,
@@ -523,8 +529,8 @@ export async function POST(req: NextRequest) {
       totalCount,
       currentBatch: metaList.length,
       hasMore: !!nextPageToken,
-      totalEmailsProcessed: allDocs.length,
-      validEmailsForSearch: validDocs.length,
+      batchSize: metaList.length,
+      batchMatches: formattedMatches.length,
     });
   } catch (error) {
     console.error("Unexpected error in Gmail search:", error);

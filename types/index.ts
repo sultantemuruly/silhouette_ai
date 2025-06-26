@@ -28,6 +28,8 @@ export interface SearchResponse {
   hasMore: boolean;
   totalEmailsProcessed?: number;
   validEmailsForSearch?: number;
+  batchSize?: number;
+  batchMatches?: number;
 }
 
 export interface PaginationState {

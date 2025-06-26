@@ -1,6 +1,6 @@
 "use client";
 
-import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
+import { Sheet, SheetTrigger, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Sidebar } from "./sidebar";
 import { Menu } from "lucide-react";
@@ -13,13 +13,14 @@ export function ResponsiveSidebar() {
         <SheetTrigger asChild>
           <Button
             variant="ghost"
-            className="md:hidden absolute top-4 left-4 z-20"
+            className="md:hidden fixed top-4 left-4 z-50"
             aria-label="Open sidebar"
           >
             <Menu className="h-6 w-6" />
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="w-3/4 max-w-xs p-0 md:hidden">
+          <SheetTitle className="sr-only">Sidebar navigation</SheetTitle>
           <Sidebar />
         </SheetContent>
       </Sheet>

@@ -25,7 +25,7 @@ export function Navbar() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-8 flex h-16 items-center justify-between">
         {/* Logo + Nav */}
         <div className="flex items-center gap-6 md:gap-10">
-          <span className="text-2xl font-bold tracking-tight">
+          <span className="text-2xl font-bold tracking-tight hidden md:inline">
             Silhouette AI
           </span>
 

@@ -24,7 +24,7 @@ async function checkMeaning(query: string): Promise<boolean> {
 
 export default function EmailSearch() {
   const [query, setQuery] = useState("");
-  const [allResults, setAllResults] = useState<EmailMatch[]>([]);
+  const [pageResults, setPageResults] = useState<EmailMatch[]>([]);
   const [emailSummary, setEmailSummary] = useState<EmailSummary | null>(null);
   const [loading, setLoading] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -35,11 +35,14 @@ export default function EmailSearch() {
 
   // Pagination states
   const [nextPageToken, setNextPageToken] = useState<string | undefined>();
+  const [prevPageTokens, setPrevPageTokens] = useState<string[]>([]);
+  const [pageIndex, setPageIndex] = useState(0);
   const [hasMore, setHasMore] = useState(false);
-  const [totalCount, setTotalCount] = useState<number | undefined>();
+  const [batchSize, setBatchSize] = useState<number>(0);
+  const [batchMatches, setBatchMatches] = useState<number>(0);
   const pageSize = 50;
 
-  const handleSearch = async (isLoadMore = false) => {
+  const handleSearch = async (isLoadMore = false, goBack = false) => {
     if (!isLoadMore && !query.trim()) return;
 
     const searchQuery = query.trim();
@@ -60,11 +63,14 @@ export default function EmailSearch() {
         }
 
         // Reset states for new search
-        setAllResults([]);
+        setPageResults([]);
         setEmailSummary(null);
         setNextPageToken(undefined);
+        setPrevPageTokens([]);
+        setPageIndex(0);
         setHasMore(false);
-        setTotalCount(undefined);
+        setBatchSize(0);
+        setBatchMatches(0);
       }
 
       const res = await fetch("/api/gmail/search", {
@@ -72,7 +78,11 @@ export default function EmailSearch() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           queryText: searchQuery,
-          pageToken: isLoadMore ? nextPageToken : undefined,
+          pageToken: goBack
+            ? prevPageTokens[pageIndex - 1]
+            : isLoadMore
+            ? nextPageToken
+            : undefined,
           limit: pageSize,
         }),
       });
@@ -81,13 +91,22 @@ export default function EmailSearch() {
 
       const data: SearchResponse = await res.json();
 
-      // Update results
-      setAllResults((prev) =>
-        isLoadMore ? [...prev, ...data.matches] : data.matches
-      );
+      // Update results for this page only
+      setPageResults(data.matches);
+      setBatchSize(data.batchSize || 0);
+      setBatchMatches(data.batchMatches || 0);
       setNextPageToken(data.nextPageToken);
       setHasMore(data.hasMore);
-      setTotalCount(data.totalCount);
+      if (isLoadMore && !goBack) {
+        setPrevPageTokens((prev) => [...prev, nextPageToken || ""]);
+        setPageIndex((i) => i + 1);
+        setEmailSummary(null);
+        setError(null);
+      } else if (goBack) {
+        setPageIndex((i) => Math.max(0, i - 1));
+        setEmailSummary(null);
+        setError(null);
+      }
 
       // Auto-summarize for new searches
       if (!isLoadMore && data.matches.length > 0) {
@@ -106,7 +125,7 @@ export default function EmailSearch() {
   };
 
   const handleSummarize = async (emails?: EmailMatch[]) => {
-    const emailsToSummarize = emails || allResults;
+    const emailsToSummarize = emails || pageResults;
     if (emailsToSummarize.length === 0) return;
 
     setSummarizing(true);
@@ -132,11 +151,8 @@ export default function EmailSearch() {
   };
 
   const getBatchInfo = () => {
-    if (allResults.length === 0) return null;
-
-    return `Loaded ${allResults.length} of ${
-      totalCount || "many"
-    } matching emails`;
+    if (batchSize === 0) return null;
+    return `${batchMatches} out of ${batchSize} emails are matching`;
   };
 
   return (
@@ -176,24 +192,28 @@ export default function EmailSearch() {
               </Badge>
             )}
 
-            {hasMore ? (
+            <div className="flex gap-2">
+              <Button
+                onClick={() => handleSearch(true, true)}
+                disabled={pageIndex === 0 || loadingMore}
+                variant="outline"
+                size="sm"
+              >
+                &larr; Prev
+              </Button>
               <Button
                 onClick={() => handleSearch(true)}
-                disabled={loadingMore}
+                disabled={!hasMore || loadingMore}
                 variant="outline"
                 size="sm"
               >
                 {loadingMore ? (
                   <Loader loadingText="Loading..." additionalStyles={null} />
                 ) : (
-                  "Search More"
+                  "Next"
                 )}
               </Button>
-            ) : (
-              allResults.length > 0 && (
-                <span className="text-gray-500 text-sm">Nothing to search</span>
-              )
-            )}
+            </div>
           </div>
 
           {error && (
@@ -222,10 +242,10 @@ export default function EmailSearch() {
         />
       )}
 
-      {allResults.length > 0 && (
+      {pageResults.length > 0 && (
         <EmailResultsSection
-          results={allResults}
-          allResults={allResults}
+          results={pageResults}
+          allResults={pageResults}
           emailSummary={emailSummary}
           summarizing={summarizing}
           showEmails={showEmails}

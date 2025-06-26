@@ -36,16 +36,6 @@ export function Sidebar() {
         </nav>
 
         <Separator className="my-4" />
-        {/* Custom filters */}
-        <div className="mt-2">
-          <h6 className="px-3 mb-2 text-xs font-semibold uppercase text-gray-500">
-            Custom
-          </h6>
-          <Button variant="outline" size="sm" className="w-full">
-            <Plus className="mr-2 h-4 w-4" />
-            Add Filter
-          </Button>
-        </div>
       </ScrollArea>
     </aside>
   );
