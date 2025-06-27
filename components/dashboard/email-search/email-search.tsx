@@ -141,7 +141,7 @@ export default function EmailSearch() {
 
       if (!res.ok) throw new Error(await res.text());
 
-      let summaryRaw = await res.json();
+      const summaryRaw = await res.json();
       let summary = summaryRaw;
       // If the summary is a string (sometimes happens if the backend returns a stringified JSON)
       if (typeof summary === "string") {
@@ -152,6 +152,7 @@ export default function EmailSearch() {
         try {
           summary = JSON.parse(clean);
         } catch (e) {
+          console.error(e);
           // fallback: just show the string if parsing fails
           summary = { summary: clean };
         }
