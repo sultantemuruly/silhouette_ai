@@ -141,7 +141,22 @@ export default function EmailSearch() {
 
       if (!res.ok) throw new Error(await res.text());
 
-      setEmailSummary(await res.json());
+      let summaryRaw = await res.json();
+      let summary = summaryRaw;
+      // If the summary is a string (sometimes happens if the backend returns a stringified JSON)
+      if (typeof summary === "string") {
+        let clean = summary.trim();
+        if (clean.startsWith("json")) {
+          clean = clean.replace(/^json\s*/i, "");
+        }
+        try {
+          summary = JSON.parse(clean);
+        } catch (e) {
+          // fallback: just show the string if parsing fails
+          summary = { summary: clean };
+        }
+      }
+      setEmailSummary(summary);
     } catch (err) {
       console.error("Failed to generate summary:", err);
       setError("Failed to generate email summary");

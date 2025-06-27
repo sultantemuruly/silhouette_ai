@@ -87,9 +87,23 @@ Ensure the JSON is valid and properly formatted.
           "main topics and important information",
       });
 
+      // Strip 'json' prefix and code block formatting if present
+      let cleanResult = typeof result === "string" ? result.trim() : result;
+      if (typeof cleanResult === "string") {
+        // Remove leading ```json or ``` and trailing ```
+        cleanResult = cleanResult
+          .replace(/^```json\s*/i, "")
+          .replace(/^```\s*/i, "")
+          .replace(/```$/i, "")
+          .trim();
+        if (cleanResult.toLowerCase().startsWith("json")) {
+          cleanResult = cleanResult.replace(/^json\s*/i, "").trim();
+        }
+      }
+
       // Parse the JSON response
       try {
-        const parsed = JSON.parse(result);
+        const parsed = JSON.parse(cleanResult);
         return {
           summary: parsed.summary,
           keyPoints: parsed.keyPoints || [],
