@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuth } from "@clerk/nextjs/server";
 import { google, gmail_v1 } from "googleapis";
-import { OpenAIEmbeddings, ChatOpenAI } from "@langchain/openai";
+import { AzureOpenAIEmbeddings, AzureChatOpenAI } from "@langchain/openai";
 import { MemoryVectorStore } from "langchain/vectorstores/memory";
 import { Document } from "langchain/document";
 import { db } from "@/lib/db";
@@ -91,7 +91,7 @@ function cosineSimilarity(vecA: number[], vecB: number[]): number {
 async function performSimilaritySearch(
   documents: Document[],
   queryText: string,
-  embeddings: OpenAIEmbeddings,
+  embeddings: AzureOpenAIEmbeddings,
   topK: number = 5
 ): Promise<Document[]> {
   try {
@@ -104,16 +104,16 @@ async function performSimilaritySearch(
     const queryEmbedding = await embeddings.embedQuery(queryText);
 
     // Calculate similarities
-    const similarities = docEmbeddings.map((docEmb, index) => ({
+    const similarities = docEmbeddings.map((docEmb: number[], index: number) => ({
       document: documents[index],
       similarity: cosineSimilarity(queryEmbedding, docEmb),
     }));
 
     // Sort by similarity and return top K
     return similarities
-      .sort((a, b) => b.similarity - a.similarity)
+      .sort((a: {document: Document, similarity: number}, b: {document: Document, similarity: number}) => b.similarity - a.similarity)
       .slice(0, topK)
-      .map((item) => item.document);
+      .map((item: {document: Document, similarity: number}) => item.document);
   } catch (error) {
     console.error("Error in fallback similarity search:", error);
     throw error;
@@ -198,6 +198,25 @@ function extractKeywords(query: string): string {
   return words.join(" ");
 }
 
+// Helper for Azure OpenAI config (chat)
+const azureOpenAIChatConfig = {
+  model: "gpt-4o",
+  temperature: 0,
+  maxRetries: 2,
+  azureOpenAIApiKey: process.env.AZURE_OPENAI_API_KEY!,
+  azureOpenAIApiInstanceName: process.env.AZURE_OPENAI_API_INSTANCE_NAME!,
+  azureOpenAIApiDeploymentName: process.env.AZURE_OPENAI_DEPLOYMENT_NAME_1!,
+  azureOpenAIApiVersion: process.env.AZURE_OPENAI_API_VERSION_1!,
+};
+
+// Helper for Azure OpenAI config (embeddings)
+const azureOpenAIEmbeddingsConfig = {
+  azureOpenAIApiKey: process.env.AZURE_OPENAI_API_KEY!,
+  azureOpenAIApiInstanceName: process.env.AZURE_OPENAI_API_INSTANCE_NAME!,
+  azureOpenAIApiDeploymentName: process.env.AZURE_OPENAI_DEPLOYMENT_NAME_2!,
+  azureOpenAIApiVersion: process.env.AZURE_OPENAI_API_VERSION_2!,
+};
+
 /**
  * Uses LLM to generate the best Gmail search query for a user's natural language query.
  */
@@ -205,10 +224,8 @@ async function llmGenerateGmailQuery(
   userQuery: string
 ): Promise<string | null> {
   try {
-    const chat = new ChatOpenAI({
-      temperature: 0,
-      maxRetries: 2,
-      timeout: 20000,
+    const chat = new AzureChatOpenAI({
+      ...azureOpenAIChatConfig,
     });
     const prompt = `You are an expert at searching Gmail. Given a user's natural language query, generate the most effective Gmail search query using Gmail's search operators. Only output the Gmail search string, nothing else.\n\nExamples:\nUser query: \"Any new from amazon?\"\nGmail search: from:amazon newer_than:7d\n\nUser query: \"Invoices from John last month\"\nGmail search: from:john subject:invoice after:2024/05/01 before:2024/06/01\n\nUser query: \"Did I get a password reset email?\"\nGmail search: subject:password reset\n\nUser query: \"${userQuery}\"\nGmail search:`;
     const response = await chat.invoke([
@@ -399,7 +416,8 @@ export async function POST(req: NextRequest) {
 
     try {
       console.log("Creating embeddings...");
-      const embeddings = new OpenAIEmbeddings({
+      const embeddings = new AzureOpenAIEmbeddings({
+        ...azureOpenAIEmbeddingsConfig,
         maxRetries: 3,
         timeout: 60000,
       });
@@ -410,6 +428,7 @@ export async function POST(req: NextRequest) {
         const vectorStore = await MemoryVectorStore.fromDocuments(
           docsForEmbedding,
           embeddings
+          
         );
         topDocs = await vectorStore.similaritySearch(
           searchQuery.trim(),
@@ -433,10 +452,8 @@ export async function POST(req: NextRequest) {
       if (topDocs.length > 0) {
         try {
           console.log("Generating AI summary...");
-          const chat = new ChatOpenAI({
-            temperature: 0,
-            maxRetries: 3,
-            timeout: 30000,
+          const chat = new AzureChatOpenAI({
+            ...azureOpenAIChatConfig,
           });
 
           const batchInfo = ` (showing results from this batch of ${metaList.length} emails)`;

@@ -1,4 +1,4 @@
-import { ChatOpenAI } from "@langchain/openai";
+import { AzureChatOpenAI } from "@langchain/openai";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { RunnableSequence } from "@langchain/core/runnables";
 import { StringOutputParser } from "@langchain/core/output_parsers";
@@ -28,7 +28,7 @@ export interface ImportanceResult {
 }
 
 export class ImportanceAgent {
-  private llm: ChatOpenAI;
+  private llm: AzureChatOpenAI;
   private parser: StringOutputParser;
   private prompt: PromptTemplate;
 
@@ -36,15 +36,16 @@ export class ImportanceAgent {
    * @param apiKey OpenAI API key (falls back to process.env.OPENAI_API_KEY)
    */
   constructor(
-    temperature = 0.3,
-    apiKey: string = process.env.OPENAI_API_KEY ?? ""
+    temperature = 0.3
   ) {
-    this.llm = new ChatOpenAI({
-      openAIApiKey: apiKey,
+    this.llm = new AzureChatOpenAI({
+      model: "gpt-4o",
       temperature,
       maxRetries: 3,
-      timeout: 30_000,
-      modelName: "gpt-4",
+      azureOpenAIApiKey: process.env.AZURE_OPENAI_API_KEY!,
+      azureOpenAIApiInstanceName: process.env.AZURE_OPENAI_API_INSTANCE_NAME!,
+      azureOpenAIApiDeploymentName: process.env.AZURE_OPENAI_DEPLOYMENT_NAME_1!,
+      azureOpenAIApiVersion: process.env.AZURE_OPENAI_API_VERSION_1!,
     });
     this.parser = new StringOutputParser();
 
@@ -96,7 +97,13 @@ Ensure valid JSON.
 
     let scores: Array<{ id: string; score: number }> = [];
     try {
-      scores = JSON.parse(raw as string) as typeof scores;
+      // Remove Markdown code block if present
+      let cleaned = (raw as string)
+        .replace(/^```json\s*/i, "")
+        .replace(/^```\s*/i, "")
+        .replace(/```\s*$/i, "")
+        .trim();
+      scores = JSON.parse(cleaned) as typeof scores;
     } catch (e) {
       console.error("ImportanceAgent JSON parse error:", e, raw);
       throw new Error("Failed to parse importance scores");

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { ChatOpenAI } from "@langchain/openai";
+import { AzureChatOpenAI } from "@langchain/openai";
 
 export async function POST(req: NextRequest) {
   const { query } = await req.json();
@@ -7,7 +7,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ isMeaningful: false });
   }
 
-  const llm = new ChatOpenAI({ temperature: 0 });
+  const llm = new AzureChatOpenAI({
+    model: "gpt-4o",
+    temperature: 0,
+    maxRetries: 2,
+    azureOpenAIApiKey: process.env.AZURE_OPENAI_API_KEY!,
+    azureOpenAIApiInstanceName: process.env.AZURE_OPENAI_API_INSTANCE_NAME!,
+    azureOpenAIApiDeploymentName: process.env.AZURE_OPENAI_DEPLOYMENT_NAME!,
+    azureOpenAIApiVersion: process.env.AZURE_OPENAI_API_VERSION!,
+  });
   const prompt = `
 You are a classifier. 
 Given an input string, respond with JSON:

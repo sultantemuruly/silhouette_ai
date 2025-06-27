@@ -1,4 +1,4 @@
-import { ChatOpenAI } from "@langchain/openai";
+import { AzureChatOpenAI } from "@langchain/openai";
 import { PromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { RunnableSequence } from "@langchain/core/runnables";
@@ -10,15 +10,18 @@ export interface SummaryOptions extends BaseSummaryOptions {
 }
 
 export class BaseSummarizationAgent {
-  private llm: ChatOpenAI;
+  private llm: AzureChatOpenAI;
   private outputParser: StringOutputParser;
 
   constructor(temperature: number = 0.3) {
-    this.llm = new ChatOpenAI({
+    this.llm = new AzureChatOpenAI({
+      model: "gpt-4o",
       temperature,
       maxRetries: 3,
-      timeout: 30000,
-      modelName: "gpt-4",
+      azureOpenAIApiKey: process.env.AZURE_OPENAI_API_KEY!,
+      azureOpenAIApiInstanceName: process.env.AZURE_OPENAI_API_INSTANCE_NAME!,
+      azureOpenAIApiDeploymentName: process.env.AZURE_OPENAI_DEPLOYMENT_NAME_1!,
+      azureOpenAIApiVersion: process.env.AZURE_OPENAI_API_VERSION_1!,
     });
     this.outputParser = new StringOutputParser();
   }
