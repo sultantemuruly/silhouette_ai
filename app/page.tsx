@@ -15,7 +15,7 @@ export default function Home() {
         <section className="py-20 bg-black/95">
           <div className="container px-4 md:px-6 flex flex-col items-center">
             <div className="w-full max-w-3xl aspect-video rounded-lg overflow-hidden border shadow-xl bg-black">
-              <YouTubeEmbed videoId="z3v-ZFdrd6U" />
+              <YouTubeEmbed videoId="z3v-ZFdrd6U"/>
             </div>
           </div>
         </section>
