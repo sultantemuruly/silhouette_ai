@@ -25,6 +25,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const measurementId = process.env.NEXT_PUBLIC_GOOGLE_MEASUREMENT_ID;
+  console.log("GA MEASUREMENT ID:", measurementId);
+
   return (
     <html lang="en">
       <head>
