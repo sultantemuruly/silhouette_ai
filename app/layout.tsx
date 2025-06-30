@@ -25,7 +25,6 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const measurementId = process.env.NEXT_PUBLIC_GOOGLE_MEASUREMENT_ID;
-  console.log("GA MEASUREMENT ID:", measurementId);
 
   return (
     <html lang="en">
@@ -35,6 +34,15 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        {/* Debugging: Log measurementId to the browser console */}
+        <Script id="debug-measurement-id" strategy="beforeInteractive">
+          {`
+            console.log("Google Measurement ID:", "${measurementId}");
+            if (!"${measurementId}") {
+              console.warn("Google Measurement ID is missing! Check NEXT_PUBLIC_GOOGLE_MEASUREMENT_ID in your environment.");
+            }
+          `}
+        </Script>
         {measurementId && (
           <>
             <Script
