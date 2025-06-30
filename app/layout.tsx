@@ -36,10 +36,12 @@ export default function RootLayout({
       >
         {/* Debugging: Log measurementId to the browser console */}
         <Script id="debug-measurement-id" strategy="beforeInteractive">
-          {`
-            console.log("Google Measurement ID:", "${measurementId}");
+          {`Code Runner
             if (!"${measurementId}") {
               console.warn("Google Measurement ID is missing! Check NEXT_PUBLIC_GOOGLE_MEASUREMENT_ID in your environment.");
+            }
+            else {
+              console.log("Google Measurement ID is present");
             }
           `}
         </Script>

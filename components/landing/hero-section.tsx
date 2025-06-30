@@ -89,51 +89,33 @@ export function HeroSection() {
                     <div className="text-sm text-muted-foreground">Today</div>
                   </div>
                   <div className="space-y-3">
+                    {/* AI Search & Summary Example */}
                     <div className="flex items-start gap-3 p-3 rounded-md border bg-card">
-                      <div className="h-8 w-8 rounded-full bg-blue-600/20 flex items-center justify-center text-blue-700">
+                      <div className="h-8 w-8 rounded-full bg-blue-600/10 flex items-center justify-center text-blue-600">
                         <Sparkles className="h-4 w-4" />
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center justify-between">
-                          <div className="font-medium">Project Update</div>
-                          <div className="text-xs text-muted-foreground">
-                            10:30 AM
-                          </div>
+                          <div className="font-medium text-black">Search: &quot;project update&quot;</div>
+                          <div className="text-xs text-slate-900">AI Summary</div>
                         </div>
-                        <div className="text-sm text-muted-foreground line-clamp-1">
-                          AI has prioritized this email as urgent
+                        <div className="text-sm text-black">
+                          3 emails found. Key points: Project deadline, client feedback, next steps.
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-start gap-3 p-3 rounded-md border">
-                      <div className="h-8 w-8 rounded-full bg-blue-600/10 text-blue-700 flex items-center justify-center">
+                    {/* Important Email Example */}
+                    <div className="flex items-start gap-3 p-3 rounded-md border bg-card">
+                      <div className="h-8 w-8 rounded-full bg-blue-600/10 flex items-center justify-center text-blue-600">
                         <Mail className="h-4 w-4" />
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center justify-between">
-                          <div className="font-medium">Newsletter</div>
-                          <div className="text-xs text-muted-foreground">
-                            9:15 AM
-                          </div>
+                          <div className="font-medium text-black">Important: Client Feedback</div>
+                          <div className="text-xs text-slate-900">10:30 AM</div>
                         </div>
-                        <div className="text-sm text-muted-foreground line-clamp-1">
-                          AI has marked this as low priority
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-3 p-3 rounded-md border">
-                      <div className="h-8 w-8 rounded-full bg-blue-600/10 text-blue-700 flex items-center justify-center">
-                        <Clock className="h-4 w-4" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <div className="font-medium">Follow-up Scheduled</div>
-                          <div className="text-xs text-muted-foreground">
-                            Yesterday
-                          </div>
-                        </div>
-                        <div className="text-sm text-muted-foreground line-clamp-1">
-                          Automatic follow-up scheduled for tomorrow
+                        <div className="text-sm text-black">
+                          AI marked this as important: &quot;Client feedback requires urgent response.&quot;
                         </div>
                       </div>
                     </div>
