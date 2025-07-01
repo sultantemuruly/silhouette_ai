@@ -193,7 +193,7 @@ export default function EmailSearch() {
               variant="regular"
             >
               {loading ? (
-                <Loader loadingText={null} additionalStyles={null} />
+                <Loader loadingText={null} additionalStyles={'text-white'} />
               ) : (
                 "Search"
               )}
