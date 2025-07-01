@@ -16,6 +16,18 @@ export function Footer() {
           <Link href="/terms-of-service" className="text-sm text-muted-foreground hover:text-foreground">
             Terms&nbsp;of&nbsp;Service
           </Link>
+
+          {/* Separator (shown only on wider screens) */}
+          <span className="hidden sm:inline text-muted-foreground">•</span>
+
+          <a
+            href="https://mail.google.com/mail/?view=cm&to=sultantemuruly@gmail.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-muted-foreground hover:text-foreground"
+          >
+            Contact: sultantemuruly@gmail.com
+          </a>
         </div>
 
         {/* Copyright */}
