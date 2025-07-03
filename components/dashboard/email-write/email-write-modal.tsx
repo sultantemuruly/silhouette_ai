@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { useMessageStore } from '@/stores/useMessageStore'
+import TextareaAutosize from 'react-textarea-autosize';
 
 import {
     Card,
@@ -43,7 +44,7 @@ export const EmailWriteModal = () => {
                 </div>
                 <div>
                     <div className='text-md font-medium pb-2'>Message</div>
-                    <textarea value={draftMessage} onChange={(e) => setDraftMessage(e.target.value)} placeholder="Enter message" className='w-full h-40 border border-input border-rounded-lg hover:border-blue-600 focus:ring-blue-600 p-2'/>
+                    <TextareaAutosize value={draftMessage} onChange={(e) => setDraftMessage(e.target.value)} placeholder="Enter message" className='w-full h-40 border border-input border-rounded-lg hover:border-blue-600 focus:ring-blue-600 p-2'/>
                 </div>
             </div>
         </CardContent>

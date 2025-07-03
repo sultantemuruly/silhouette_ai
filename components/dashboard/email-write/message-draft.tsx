@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useMessageStore } from '@/stores/useMessageStore'
 import ReactMarkdown from 'react-markdown';
+import TextareaAutosize from 'react-textarea-autosize';
 
 import { Input } from '@/components/ui/input';
 
@@ -63,16 +64,23 @@ const MessageDraft = () => {
     };
 
     return (
-      <div className="flex flex-col lg:flex-row w-full h-auto lg:h-[32rem] gap-4 sm:gap-6">
+      <div className="flex flex-col lg:flex-row w-full gap-4 sm:gap-6">
         {/* User Message Section */}
         <div className="w-full lg:w-[60%] flex flex-col mb-4 lg:mb-0">
-          <div className='flex flex-col gap-2'>
-              <div className="text-base sm:text-lg font-semibold mb-1 sm:mb-2">Subject</div>
+          <div className='pt-2 flex flex-col gap-1'>
+              <div className="text-sm sm:text-md font-medium mb-1 sm:mb-2">Subject</div>
               <Input value={draftSubject} onChange={(e) => setDraftSubject(e.target.value)} type="text" placeholder="Enter subject" className='hover:border-blue-600 focus:ring-blue-600'/>
           </div>
-          <div className='flex flex-col gap-2'>
-              <div className="text-base sm:text-lg font-semibold mb-1 sm:mb-2">Your Message</div>
-              <textarea value={draftMessage} onChange={(e) => setDraftMessage(e.target.value)} className="w-full flex-1 border border-input rounded-lg hover:border-blue-600 focus:ring-blue-600 p-2 sm:p-4 resize-none min-h-[8rem] sm:min-h-[10rem] lg:min-h-0 text-sm sm:text-base" placeholder="Write your message here..." />
+          <div className='pt-2 flex flex-col gap-1'>
+              <div className="text-sm sm:text-md font-medium mb-1 sm:mb-2">Your Message</div>
+              <TextareaAutosize
+                value={draftMessage}
+                onChange={e => setDraftMessage(e.target.value)}
+                className="w-full border border-input rounded-lg hover:border-blue-600 focus:ring-blue-600 p-2 sm:p-4 min-h-[8rem] sm:min-h-[10rem] text-sm sm:text-base resize-y"
+                placeholder="Write your message here..."
+                minRows={4}
+                maxRows={16}
+              />
           </div>
         </div>
         {/* AI Chat Section */}

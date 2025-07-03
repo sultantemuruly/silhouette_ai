@@ -413,7 +413,7 @@ export async function POST(req: NextRequest) {
     // 8. Create vector store and perform semantic search within this batch
     let topDocs: Document[] = [];
     let summary = "";
-
+    
     try {
       console.log("Creating embeddings...");
       const embeddings = new AzureOpenAIEmbeddings({
