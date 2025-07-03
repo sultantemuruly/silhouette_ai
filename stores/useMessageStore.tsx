@@ -6,6 +6,6 @@ export const useMessageStore = create((set) => ({
   handleDraft: () => set((state: DraftState) => ({ isDraft: !state.isDraft })),
   draftMessage: '',
   setDraftMessage: (draftMessage: string) => set({ draftMessage }),
-  draftTitle: '',
-  setDraftTitle: (draftTitle: string) => set({ draftTitle }),
+  draftSubject: '',
+  setDraftSubject: (draftSubject: string) => set({ draftSubject }),
 }))
