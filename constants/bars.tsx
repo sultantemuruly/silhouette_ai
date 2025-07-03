@@ -1,5 +1,5 @@
 import { NavItem } from "@/types";
-import { Inbox, Star, Search } from "lucide-react";
+import { Inbox, Star, Search, PenLine } from "lucide-react";
 
 export const navItems: NavItem[] = [
   {
@@ -22,6 +22,15 @@ export const navItems: NavItem[] = [
     icon: <Star className="h-5 w-5" />,
     badge: (
       <span className="ml-auto text-xs font-medium text-yellow-600">⭐</span>
+    ),
+  },
+  {
+    label: "Wise Write",
+    href: "/mail/write",
+    category: "write",
+    icon: <PenLine className="h-5 w-5" />,
+    badge: (
+      <span className="ml-auto text-xs font-medium text-yellow-600">🖊️</span>
     ),
   },
 ];

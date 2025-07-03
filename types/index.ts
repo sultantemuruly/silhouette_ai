@@ -88,7 +88,7 @@ export type GmailCategory = {
   description?: string;
 };
 
-export type Category = "all-mail" | "smart-search" | "important";
+export type Category = "all-mail" | "smart-search" | "important" | "write";
 
 export interface CategoryState {
   selectedCategory: Category;
