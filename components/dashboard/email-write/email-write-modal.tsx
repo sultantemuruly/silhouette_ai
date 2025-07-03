@@ -18,6 +18,8 @@ import { BrainCircuit, Send } from 'lucide-react'
 
 export const EmailWriteModal = () => {
     const { handleDraft } = useMessageStore() as {handleDraft: () => void};
+    const { draftMessage, setDraftMessage } = useMessageStore() as {draftMessage: string, setDraftMessage: (draftMessage: string) => void};
+    const { draftTitle, setDraftTitle } = useMessageStore() as {draftTitle: string, setDraftTitle: (draftTitle: string) => void};
   return (
     <Card>
         <CardHeader>
@@ -36,12 +38,12 @@ export const EmailWriteModal = () => {
                     <Input type="text" placeholder="Enter recipient email" className='hover:border-blue-600 active:border-blue-600 focus:ring-blue-600'/>
                 </div>
                 <div>
-                    <div className='text-md font-medium pb-2'>Subject</div>
-                    <Input type="text" placeholder="Enter subject" className='hover:border-blue-600 focus:ring-blue-600'/>
+                    <div className='text-md font-medium pb-2'>Title</div>
+                    <Input value={draftTitle} onChange={(e) => setDraftTitle(e.target.value)} type="text" placeholder="Enter title" className='hover:border-blue-600 focus:ring-blue-600'/>
                 </div>
                 <div>
                     <div className='text-md font-medium pb-2'>Message</div>
-                    <textarea placeholder="Enter message" className='w-full h-40 border border-input border-rounded-lg hover:border-blue-600 focus:ring-blue-600 p-2'/>
+                    <textarea value={draftMessage} onChange={(e) => setDraftMessage(e.target.value)} placeholder="Enter message" className='w-full h-40 border border-input border-rounded-lg hover:border-blue-600 focus:ring-blue-600 p-2'/>
                 </div>
             </div>
         </CardContent>

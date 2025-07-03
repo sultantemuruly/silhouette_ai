@@ -114,4 +114,8 @@ export interface MessagePreview {
 export type DraftState = {
   isDraft: boolean;
   setIsDraft: (isDraft: boolean) => void;
+  draftMessage: string;
+  setDraftMessage: (draftMessage: string) => void;
+  draftTitle: string;
+  setDraftTitle: (draftTitle: string) => void;
 }
