@@ -1,6 +1,8 @@
 "use client"
 
 import React from 'react'
+import { useMessageStore } from '@/stores/useMessageStore'
+
 import {
     Card,
     CardContent,
@@ -13,7 +15,9 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { BrainCircuit, Send } from 'lucide-react'
 
+
 export const EmailWriteModal = () => {
+    const { handleDraft } = useMessageStore() as {handleDraft: () => void};
   return (
     <Card>
         <CardHeader>
@@ -43,7 +47,7 @@ export const EmailWriteModal = () => {
         </CardContent>
         <CardFooter>
             <div className='flex justify-end gap-2 w-full'>
-                <Button variant="regular"><BrainCircuit className='w-4 h-4' /> AI</Button>
+                <Button variant="regular" onClick={handleDraft}><BrainCircuit className='w-4 h-4' /> AI</Button>
                 <Button variant="outline"><Send /> Send</Button>
             </div>
         </CardFooter>

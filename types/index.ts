@@ -110,3 +110,8 @@ export interface MessagePreview {
   date: string;
   snippet: string;
 }
+
+export type DraftState = {
+  isDraft: boolean;
+  setIsDraft: (isDraft: boolean) => void;
+}
