@@ -5,7 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Sidebar } from "./sidebar";
 import { Menu } from "lucide-react";
 
-export function ResponsiveSidebar() {
+interface ResponsiveSidebarProps {
+  onCategoryChange?: (category: string) => void;
+}
+
+export function ResponsiveSidebar({ onCategoryChange }: ResponsiveSidebarProps) {
   return (
     <>
       {/* Mobile: hamburger trigger */}
@@ -21,13 +25,13 @@ export function ResponsiveSidebar() {
         </SheetTrigger>
         <SheetContent side="left" className="w-3/4 max-w-xs p-0 md:hidden">
           <SheetTitle className="sr-only">Sidebar navigation</SheetTitle>
-          <Sidebar />
+          <Sidebar onCategoryChange={onCategoryChange} />
         </SheetContent>
       </Sheet>
 
       {/* Desktop: stick below a 4 rem Navbar (top-16) */}
       <div className="hidden md:block sticky top-16 self-start">
-        <Sidebar />
+        <Sidebar onCategoryChange={onCategoryChange} />
       </div>
     </>
   );

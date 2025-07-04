@@ -9,7 +9,11 @@ import { Separator } from "@/components/ui/separator";
 import { useCategoryStore } from "@/stores/useCategoryStore";
 import { navItems } from "@/constants/bars";
 
-export function Sidebar() {
+interface SidebarProps {
+  onCategoryChange?: (category: string) => void;
+}
+
+export function Sidebar({ onCategoryChange }: SidebarProps) {
   const setCategory = useCategoryStore((state) => state.setCategory);
   const selectedCategory = useCategoryStore((state) => state.selectedCategory);
 
@@ -23,6 +27,7 @@ export function Sidebar() {
               key={item.href}
               onClick={() => {
                 setCategory(item.category);
+                if (onCategoryChange) onCategoryChange(item.category);
               }}
               className={cn("flex items-center px-3 py-2 rounded-md")}
               variant={selectedCategory === item.category ? `regular` : `ghost`}

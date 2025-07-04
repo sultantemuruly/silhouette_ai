@@ -7,14 +7,21 @@ import { Menu, X, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useClerk, UserButton, SignedIn, SignedOut } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
+import { trackGtag } from "@/lib/gtag";
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { openSignIn, openSignUp } = useClerk();
   const router = useRouter();
 
-  const handleLoginClick = () => openSignIn();
-  const handleSignUpClick = () => openSignUp();
+  const handleLoginClick = () => {
+    trackGtag('login_click', 'auth');
+    openSignIn();
+  };
+  const handleSignUpClick = () => {
+    trackGtag('get_started_click', 'auth');
+    openSignUp();
+  };
 
   const handleDashboardNav = () => {
     router.push("/dashboard");

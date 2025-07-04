@@ -4,12 +4,16 @@ import { Button } from "../ui/button";
 import { ArrowRight, Clock, Mail, Sparkles } from "lucide-react";
 import { useClerk, SignedIn, SignedOut } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
+import { trackGtag } from "@/lib/gtag";
 
 export function HeroSection() {
   const { openSignUp } = useClerk();
   const router = useRouter();
 
-  const handleSignUpClick = () => openSignUp();
+  const handleSignUpClick = () => {
+    trackGtag('get_started_click', 'auth');
+    openSignUp();
+  };
   const handleDashboardNav = () => {
     router.push("/dashboard");
   };

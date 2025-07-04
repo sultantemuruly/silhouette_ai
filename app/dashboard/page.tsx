@@ -11,6 +11,9 @@ import EmailWrite from "@/components/dashboard/email-write/email-write";
 
 import { useCategoryStore } from "@/stores/useCategoryStore";
 import { Category } from "@/types";
+import { useEffect } from "react";
+
+import { trackGtag } from "@/lib/gtag";
 
 const categoryComponents: Record<Category, React.ReactNode> = {
   write: <EmailWrite />,
@@ -22,6 +25,18 @@ const categoryComponents: Record<Category, React.ReactNode> = {
 
 export default function Dashboard() {
   const selectedCategory = useCategoryStore((state) => state.selectedCategory);
+  const setCategory = useCategoryStore((state) => state.setCategory);
+
+  // Track dashboard view
+  useEffect(() => {
+    trackGtag('dashboard_view', 'dashboard');
+  }, []);
+
+  // Track sidebar category changes
+  const handleCategoryChange = (category: string) => {
+    trackGtag('sidebar_category_click', 'dashboard', category);
+    setCategory(category as Category);
+  };
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -29,7 +44,7 @@ export default function Dashboard() {
 
       <div className="flex flex-1">
         {/* Left: sidebar */}
-        <ResponsiveSidebar />
+        <ResponsiveSidebar onCategoryChange={handleCategoryChange} />
 
         {/* Right: main content (grows to fill) */}
         <main className="flex-1 overflow-auto p-4">
