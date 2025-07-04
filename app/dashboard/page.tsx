@@ -6,16 +6,17 @@ import { ResponsiveSidebar } from "@/components/dashboard/bars/responsive-sideba
 import EmailAllView from "@/components/dashboard/email-view/email-all-view";
 import EmailSearch from "@/components/dashboard/email-search/email-search";
 import EmailImportantMessages from "@/components/dashboard/email-important/email-important-messages";
+// import ComingSoon from "@/components/dashboard/coming-soon";
 import EmailWrite from "@/components/dashboard/email-write/email-write";
 
 import { useCategoryStore } from "@/stores/useCategoryStore";
 import { Category } from "@/types";
 
 const categoryComponents: Record<Category, React.ReactNode> = {
+  write: <EmailWrite />,
   "all-mail": <EmailAllView />,
   "smart-search": <EmailSearch />,
   important: <EmailImportantMessages />,
-  write: <EmailWrite />,
   // add more in future
 };
 

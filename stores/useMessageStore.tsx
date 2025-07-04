@@ -8,4 +8,6 @@ export const useMessageStore = create((set) => ({
   setDraftMessage: (draftMessage: string) => set({ draftMessage }),
   draftSubject: '',
   setDraftSubject: (draftSubject: string) => set({ draftSubject }),
+  recipient: '',
+  setRecipient: (recipient: string) => set({ recipient }),
 }))

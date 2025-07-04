@@ -3,6 +3,15 @@ import { Inbox, Star, Search, PenLine } from "lucide-react";
 
 export const navItems: NavItem[] = [
   {
+    label: "Wise Write",
+    href: "/mail/write",
+    category: "write",
+    icon: <PenLine className="h-5 w-5" />,
+    badge: (
+      <span className="ml-auto text-xs font-medium text-yellow-600">🖊️</span>
+    ),
+  },
+  {
     label: "All Mail",
     href: "/mail/all",
     category: "all-mail",
@@ -23,14 +32,5 @@ export const navItems: NavItem[] = [
     badge: (
       <span className="ml-auto text-xs font-medium text-yellow-600">⭐</span>
     ),
-  },
-  {
-    label: "Wise Write",
-    href: "/mail/write",
-    category: "write",
-    icon: <PenLine className="h-5 w-5" />,
-    badge: (
-      <span className="ml-auto text-xs font-medium text-yellow-600">🖊️</span>
-    ),
-  },
+  }
 ];
