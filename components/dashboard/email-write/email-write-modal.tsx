@@ -125,6 +125,8 @@ export const EmailWriteModal: React.FC<EmailWriteModalProps> = ({ refreshSchedul
             return;
         }
         if (!user_id || !sender) {
+            console.log(user_id);
+            console.log(sender);
             setError('User not found. Please log in.');
             setSuccess(null);
             return;

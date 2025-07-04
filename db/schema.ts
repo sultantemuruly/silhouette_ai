@@ -25,7 +25,7 @@ export const google_accounts = pgTable("google_accounts", {
 
 export const scheduled_emails = pgTable("scheduled_emails", {
   id: serial("id").primaryKey(),
-  user_id: serial("user_id").references(() => users.id),
+  user_id: varchar("user_id", { length: 64 }).references(() => users.clerk_id),
   sender: varchar("sender", { length: 256 }).notNull(),
   recipient: varchar("recipient", { length: 256 }).notNull(),
   subject: varchar("subject", { length: 256 }).notNull(),

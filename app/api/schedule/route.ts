@@ -18,13 +18,25 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
     try {
-        const { user_id, sender, recipient, subject, content, scheduled_date } = await request.json();
+        const body = await request.json();
+        console.log('Received POST /api/schedule body:', body);
+        const { user_id, sender, recipient, subject, content, scheduled_date } = body;
         if (!user_id || !sender || !recipient || !subject || !content || !scheduled_date) {
+            console.log('Missing required fields:', { user_id, sender, recipient, subject, content, scheduled_date });
             return NextResponse.json({ error: "All fields are required" }, { status: 400 });
         }
-        const inserted = await db.insert(scheduled_emails).values({ user_id, sender, recipient, subject, content, scheduled_date });
+        console.log('Inserting scheduled email:', { user_id, sender, recipient, subject, content, scheduled_date });
+        const inserted = await db.insert(scheduled_emails).values({
+          user_id,
+          sender,
+          recipient,
+          subject,
+          content,
+          scheduled_date: new Date(scheduled_date),
+        });
         return NextResponse.json(inserted);
     } catch (error) {
+        console.error('Error in POST /api/schedule:', error);
         return NextResponse.json({ error: "Failed to schedule email", details: error instanceof Error ? error.message : error }, { status: 500 });
     }
 }

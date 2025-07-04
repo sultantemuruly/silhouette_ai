@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react'
 import EmailCapsule from './email-capsule'
 import EmailModal from './email-modal'
 import { useUser } from '@clerk/nextjs'
-// import { EmailWriteModal } from '../email-write/email-write-modal'
+import { EmailWriteModal } from '../email-write/email-write-modal'
 
 // Type for scheduled email
 interface ScheduledEmail {
@@ -14,12 +14,12 @@ interface ScheduledEmail {
 }
 
 const EmailSchedule = () => {
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
   const [scheduledEmails, setScheduledEmails] = useState<ScheduledEmail[]>([]);
   const [selectedEmail, setSelectedEmail] = useState<ScheduledEmail | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-//   const [isWriteModalOpen, setIsWriteModalOpen] = useState(false);
+  const [isWriteModalOpen, setIsWriteModalOpen] = useState(false);
 
   const refreshScheduledEmails = useCallback(async () => {
     if (!user) return;
@@ -51,24 +51,33 @@ const EmailSchedule = () => {
     setSelectedEmail(null);
   };
 
+  // Debug log
+  console.log('user.id:', user?.id, 'sender:', user?.emailAddresses?.[0]?.emailAddress, 'isLoaded:', isLoaded);
+
+  if (!isLoaded) {
+    return <div>Loading user info...</div>;
+  }
+
   return (
     <>
-      {/* <div className="mb-4 flex justify-end">
-        <button
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-          onClick={() => setIsWriteModalOpen(true)}
-        >
-          Schedule New Email
-        </button>
-      </div>
-      {isWriteModalOpen && (
+      {user?.id && user?.emailAddresses?.[0]?.emailAddress && (
+        <div className="mb-4 flex justify-end">
+          <button
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+            onClick={() => setIsWriteModalOpen(true)}
+          >
+            Schedule New Email
+          </button>
+        </div>
+      )}
+      {isWriteModalOpen && user?.id && user?.emailAddresses?.[0]?.emailAddress && (
         <EmailWriteModal
           refreshScheduledEmails={refreshScheduledEmails}
-          user_id={user?.id}
-          sender={user?.emailAddresses?.[0]?.emailAddress}
+          user_id={user.id}
+          sender={user.emailAddresses[0].emailAddress}
           onClose={() => setIsWriteModalOpen(false)}
         />
-      )} */}
+      )}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full mt-6">
         {loading ? (
           <div className="col-span-full text-center text-gray-500">Loading…</div>
