@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: "User ID is required" }, { status: 400 });
     }
 
-    const emails = await db.select().from(scheduled_emails).where(eq(scheduled_emails.user_id, Number(user_id)));
+    const emails = await db.select().from(scheduled_emails).where(eq(scheduled_emails.user_id, user_id));
 
     return NextResponse.json(emails);
 }
