@@ -14,7 +14,7 @@ import {
   } from "@/components/ui/card"
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { BrainCircuit, Send } from 'lucide-react'
+import { BrainCircuit, Send, CalendarClock } from 'lucide-react'
 import { useUser } from '@clerk/nextjs'
 import { Loader } from '@/components/ui/loader'
 
@@ -32,6 +32,37 @@ export const EmailWriteModal = () => {
     const { user } = useUser();
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
+    const [showSchedule, setShowSchedule] = useState(false);
+    const [scheduledDay, setScheduledDay] = useState<string>(""); // YYYY-MM-DD
+    const [scheduledHour, setScheduledHour] = useState<string>(""); // "0" to "23"
+
+    // Helper to get the current date/time in YYYY-MM-DD and hour
+    function getMinDate() {
+      const now = new Date();
+      return now.toISOString().slice(0, 10);
+    }
+    function getMinHour(selectedDate: string) {
+      const now = new Date();
+      if (selectedDate === getMinDate()) {
+        const nextHour = now.getHours() + 1;
+        if (nextHour > 23) {
+          // If it's past 23, user must pick tomorrow
+          return 24; // special value, will be handled in rendering
+        }
+        return nextHour;
+      }
+      return 0;
+    }
+    function isFutureDateTime(date: string, hour: string) {
+      if (!date || hour === "") return false;
+      const now = new Date();
+      const selected = new Date(date + 'T' + hour.padStart(2, '0') + ':00:00');
+      return selected > now;
+    }
+    function getScheduledDateTime() {
+      if (!scheduledDay || scheduledHour === "") return "";
+      return scheduledDay + 'T' + scheduledHour.padStart(2, '0') + ':00:00';
+    }
 
     const handleSend = async () => {
         if (!recipient || !draftSubject || !draftMessage) {
@@ -72,6 +103,55 @@ export const EmailWriteModal = () => {
         }
     }
 
+    const handleSchedule = async () => {
+        if (!recipient || !draftSubject || !draftMessage || !scheduledDay || scheduledHour === "") {
+            setError('All fields and schedule date/hour are required.');
+            setSuccess(null);
+            return;
+        }
+        if (!isValidEmail(recipient)) {
+            setError('Please enter a valid email address.');
+            setSuccess(null);
+            return;
+        }
+        if (!isFutureDateTime(scheduledDay, scheduledHour)) {
+            setError('Please select a future date and hour.');
+            setSuccess(null);
+            return;
+        }
+        setError(null);
+        setLoading(true);
+        // You may want to use a different endpoint for scheduling
+        const response = await fetch('/api/schedule', {
+            method: 'POST',
+            body: JSON.stringify({
+                recipient,
+                subject: draftSubject,
+                content: draftMessage,
+                sender: user?.emailAddresses[0].emailAddress,
+                scheduledDate: getScheduledDateTime(),
+            })
+        })
+        if (response.ok) {
+            setLoading(false);
+            setDraftMessage('');
+            setDraftSubject('');
+            setRecipient(''); 
+            setScheduledDay("");
+            setScheduledHour("");
+            setShowSchedule(false);
+            setError(null);
+            setSuccess('Scheduled successfully!');
+            setTimeout(() => setSuccess(null), 3000);
+            console.log('Email scheduled successfully');
+        } else {
+            setLoading(false);
+            setError('Failed to schedule email');
+            setSuccess(null);
+            console.error('Failed to schedule email');
+        }
+    }
+
   return (
     <Card>
         <CardHeader>
@@ -100,6 +180,50 @@ export const EmailWriteModal = () => {
                     <div className='text-md font-medium pb-2'>Message</div>
                     <TextareaAutosize disabled={loading} required value={draftMessage} onChange={(e) => setDraftMessage(e.target.value)} placeholder="Enter message" className='w-full h-40 border border-input border-rounded-lg hover:border-blue-600 focus:ring-blue-600 p-2'/>
                 </div>
+                {showSchedule && (
+                  <div>
+                    <div className='text-md font-medium pb-2'>Schedule Date & Hour</div>
+                    <div className="flex items-center gap-1">
+                      <Input
+                        type="date"
+                        min={getMinDate()}
+                        value={scheduledDay}
+                        onChange={e => {
+                          setScheduledDay(e.target.value);
+                          // If the selected date is today and the hour is less than min hour, reset hour
+                          if (e.target.value === getMinDate() && scheduledHour !== "" && parseInt(scheduledHour) < getMinHour(e.target.value)) {
+                            setScheduledHour("");
+                          }
+                        }}
+                        disabled={loading}
+                        className='hover:border-blue-600 focus:ring-blue-600 w-[140px]'
+                      />
+                      <Input
+                        type="number"
+                        min={scheduledDay === getMinDate() ? getMinHour(scheduledDay) : 0}
+                        max={23}
+                        value={scheduledHour}
+                        onChange={e => {
+                          const val = e.target.value;
+                          if (val === "") setScheduledHour("");
+                          else {
+                            const minHour = scheduledDay === getMinDate() ? getMinHour(scheduledDay) : 0;
+                            const num = Math.max(minHour, Math.min(23, parseInt(val)));
+                            setScheduledHour(num.toString());
+                          }
+                        }}
+                        placeholder="Hour"
+                        disabled={loading || !scheduledDay || (scheduledDay === getMinDate() && getMinHour(scheduledDay) === 24)}
+                        className='w-14 ml-2 hover:border-blue-600 focus:ring-blue-600 text-center'
+                      />
+                      <span className="ml-1 text-base text-gray-700">hour</span>
+                    </div>
+                    {scheduledDay === getMinDate() && getMinHour(scheduledDay) === 24 && (
+                      <div className="text-xs text-red-500 mt-1">No more hours available today. Please select a future date.</div>
+                    )}
+                    <div className="text-xs text-gray-500 mt-1">Minutes will always be 00. Only future hours are allowed.</div>
+                  </div>
+                )}
                 {error && <div className="text-red-500 text-sm pt-1">{error}</div>}
                 {success && <div className="text-green-600 text-sm pt-1">{success}</div>}
             </div>
@@ -107,7 +231,16 @@ export const EmailWriteModal = () => {
         <CardFooter>
             <div className='flex justify-end gap-2 w-full'>
                 <Button type="button" variant="regular" onClick={handleDraft} disabled={loading}><BrainCircuit className='w-4 h-4' /> AI</Button>
-                <Button type="submit" variant="outline" disabled={loading}><Send /> {loading ? <Loader loadingText="" additionalStyles="w-4 h-4" /> : 'Send'}</Button>
+                <Button type="button" variant="outline" onClick={() => setShowSchedule(v => !v)} disabled={loading}>
+                  <CalendarClock className='w-4 h-4 mr-1' /> {showSchedule ? 'Undo Schedule' : 'Schedule'}
+                </Button>
+                {showSchedule ? (
+                  <Button type="button" variant="outline" onClick={handleSchedule} disabled={loading || !scheduledDay || scheduledHour === ""}>
+                    Confirm Schedule
+                  </Button>
+                ) : (
+                  <Button type="submit" variant="outline" disabled={loading}><Send /> {loading ? <Loader loadingText="" additionalStyles="w-4 h-4" /> : 'Send'}</Button>
+                )}
             </div>
         </CardFooter>
         <div className="w-full text-right pr-6 pb-2">
