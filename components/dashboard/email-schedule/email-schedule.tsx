@@ -2,7 +2,9 @@ import React, { useState, useEffect, useCallback } from 'react'
 import EmailCapsule from './email-capsule'
 import EmailModal from './email-modal'
 import { useUser } from '@clerk/nextjs'
-import { EmailWriteModal } from '../email-write/email-write-modal'
+import { useCategoryStore } from '@/stores/useCategoryStore'
+import { Button } from '@/components/ui/button'
+// import { EmailWriteModal } from '../email-write/email-write-modal'
 
 // Type for scheduled email
 interface ScheduledEmail {
@@ -11,6 +13,7 @@ interface ScheduledEmail {
   subject: string;
   recipient: string;
   content: string;
+  status: 'pending' | 'sent' | 'failed';
 }
 
 const EmailSchedule = () => {
@@ -19,7 +22,11 @@ const EmailSchedule = () => {
   const [selectedEmail, setSelectedEmail] = useState<ScheduledEmail | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [isWriteModalOpen, setIsWriteModalOpen] = useState(false);
+  const { setCategory } = useCategoryStore();
+  const [editMode, setEditMode] = useState(false);
+  const [editFields, setEditFields] = useState({ subject: '', recipient: '', content: '', scheduled_date: '' });
+
+  // const [isWriteModalOpen, setIsWriteModalOpen] = useState(false);
 
   const refreshScheduledEmails = useCallback(async () => {
     if (!user) return;
@@ -43,12 +50,50 @@ const EmailSchedule = () => {
 
   const handleCapsuleClick = (email: ScheduledEmail) => {
     setSelectedEmail(email);
+    setEditFields({
+      subject: email.subject,
+      recipient: email.recipient,
+      content: email.content,
+      scheduled_date: email.scheduled_date,
+    });
+    setEditMode(false);
     setModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setModalOpen(false);
     setSelectedEmail(null);
+  };
+
+  const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setEditFields({ ...editFields, [e.target.name]: e.target.value });
+  };
+
+  const handleEditSave = async () => {
+    if (!selectedEmail) return;
+    await fetch('/api/schedule', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        id: selectedEmail.id,
+        user_id: user?.id,
+        ...editFields,
+      }),
+    });
+    setModalOpen(false);
+    setEditMode(false);
+    setSelectedEmail(null);
+    refreshScheduledEmails();
+  };
+
+  const handleDelete = async () => {
+    if (!selectedEmail) return;
+    await fetch(`/api/schedule?id=${selectedEmail.id}&user_id=${user?.id}`, {
+      method: 'DELETE',
+    });
+    setModalOpen(false);
+    setSelectedEmail(null);
+    refreshScheduledEmails();
   };
 
   // Debug log
@@ -62,22 +107,23 @@ const EmailSchedule = () => {
     <>
       {user?.id && user?.emailAddresses?.[0]?.emailAddress && (
         <div className="mb-4 flex justify-end">
-          <button
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-            onClick={() => setIsWriteModalOpen(true)}
+          <Button
+            variant={'regular'}
+            size={'sm'}
+            onClick={() => setCategory('wise-write')}
           >
             Schedule New Email
-          </button>
+          </Button>
         </div>
       )}
-      {isWriteModalOpen && user?.id && user?.emailAddresses?.[0]?.emailAddress && (
+      {/* {isWriteModalOpen && user?.id && user?.emailAddresses?.[0]?.emailAddress && (
         <EmailWriteModal
           refreshScheduledEmails={refreshScheduledEmails}
           user_id={user.id}
           sender={user.emailAddresses[0].emailAddress}
           onClose={() => setIsWriteModalOpen(false)}
         />
-      )}
+      )} */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full mt-6">
         {loading ? (
           <div className="col-span-full text-center text-gray-500">Loading…</div>
@@ -86,11 +132,21 @@ const EmailSchedule = () => {
         ) : (
           scheduledEmails.map(email => (
             <div key={email.id} onClick={() => handleCapsuleClick(email)} className="cursor-pointer">
+              <div className="flex items-center gap-2 mb-1">
+                <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
+                  email.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                  email.status === 'sent' ? 'bg-green-100 text-green-800' :
+                  'bg-red-100 text-red-800'
+                }`}>
+                  {email.status.charAt(0).toUpperCase() + email.status.slice(1)}
+                </span>
+              </div>
               <EmailCapsule
                 date={email.scheduled_date}
                 title={email.subject}
                 recipient={email.recipient}
                 content={email.content}
+                status={email.status}
               />
             </div>
           ))
@@ -100,10 +156,14 @@ const EmailSchedule = () => {
         <EmailModal
           open={modalOpen}
           onClose={handleCloseModal}
-          title={selectedEmail.subject}
-          recipient={selectedEmail.recipient}
-          content={selectedEmail.content}
-          date={selectedEmail.scheduled_date}
+          status={selectedEmail.status}
+          editMode={editMode}
+          editFields={editFields}
+          onEditChange={handleEditChange}
+          onEdit={handleEditSave}
+          onDelete={handleDelete}
+          onEditMode={setEditMode}
+          onCancelEdit={() => setEditMode(false)}
         />
       )}
     </>

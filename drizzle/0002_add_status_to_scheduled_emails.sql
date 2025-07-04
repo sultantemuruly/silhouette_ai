@@ -1,0 +1,1 @@
+ALTER TABLE "scheduled_emails" ADD COLUMN "status" varchar(16) NOT NULL DEFAULT 'pending'; 

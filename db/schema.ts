@@ -32,4 +32,5 @@ export const scheduled_emails = pgTable("scheduled_emails", {
   content: text().notNull(),
   scheduled_date: timestamp("scheduled_date").notNull(),
   created_at: timestamp("created_at").defaultNow().notNull(),
+  status: varchar("status", { length: 16 }).notNull().default('pending'),
 });

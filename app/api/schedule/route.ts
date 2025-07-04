@@ -33,10 +33,68 @@ export async function POST(request: NextRequest) {
           subject,
           content,
           scheduled_date: new Date(scheduled_date),
+          status: 'pending',
         });
         return NextResponse.json(inserted);
     } catch (error) {
         console.error('Error in POST /api/schedule:', error);
         return NextResponse.json({ error: "Failed to schedule email", details: error instanceof Error ? error.message : error }, { status: 500 });
+    }
+}
+
+export async function PATCH(request: NextRequest) {
+    try {
+        const body = await request.json();
+        const { id, user_id, subject, recipient, content, scheduled_date } = body;
+        if (!id || !user_id) {
+            return NextResponse.json({ error: "ID and User ID are required" }, { status: 400 });
+        }
+        const [email] = await db.select().from(scheduled_emails).where(
+            eq(scheduled_emails.id, id)
+        );
+        if (!email) {
+            return NextResponse.json({ error: "Email not found" }, { status: 404 });
+        }
+        if (email.user_id !== user_id) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+        }
+        if (email.status !== 'pending') {
+            return NextResponse.json({ error: "Only pending emails can be updated" }, { status: 400 });
+        }
+        await db.update(scheduled_emails)
+            .set({ subject, recipient, content, scheduled_date: new Date(scheduled_date) })
+            .where(eq(scheduled_emails.id, id));
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        console.error('Error in PATCH /api/schedule:', error);
+        return NextResponse.json({ error: "Failed to update scheduled email", details: error instanceof Error ? error.message : error }, { status: 500 });
+    }
+}
+
+export async function DELETE(request: NextRequest) {
+    try {
+        const { searchParams } = new URL(request.url);
+        const id = searchParams.get("id");
+        const user_id = searchParams.get("user_id");
+        if (!id || !user_id) {
+            return NextResponse.json({ error: "ID and User ID are required" }, { status: 400 });
+        }
+        const [email] = await db.select().from(scheduled_emails).where(
+            eq(scheduled_emails.id, Number(id))
+        );
+        if (!email) {
+            return NextResponse.json({ error: "Email not found" }, { status: 404 });
+        }
+        if (email.user_id !== user_id) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+        }
+        if (email.status !== 'pending') {
+            return NextResponse.json({ error: "Only pending emails can be deleted" }, { status: 400 });
+        }
+        await db.delete(scheduled_emails).where(eq(scheduled_emails.id, Number(id)));
+        return NextResponse.json({ success: true });
+    } catch (error) {
+        console.error('Error in DELETE /api/schedule:', error);
+        return NextResponse.json({ error: "Failed to delete scheduled email", details: error instanceof Error ? error.message : error }, { status: 500 });
     }
 }
