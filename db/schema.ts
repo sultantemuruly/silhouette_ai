@@ -22,3 +22,14 @@ export const google_accounts = pgTable("google_accounts", {
   refresh_token: text(),
   expiry_date: bigint({ mode: "number" }),
 });
+
+export const scheduled_emails = pgTable("scheduled_emails", {
+  id: serial("id").primaryKey(),
+  user_id: serial("user_id").references(() => users.id),
+  sender: varchar("sender", { length: 256 }).notNull(),
+  recipient: varchar("recipient", { length: 256 }).notNull(),
+  subject: varchar("subject", { length: 256 }).notNull(),
+  content: text().notNull(),
+  scheduled_date: timestamp("scheduled_date").notNull(),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+});

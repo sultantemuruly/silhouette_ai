@@ -15,21 +15,26 @@ import {
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { BrainCircuit, Send, CalendarClock } from 'lucide-react'
-import { useUser } from '@clerk/nextjs'
 import { Loader } from '@/components/ui/loader'
 
 function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-export const EmailWriteModal = () => {
+interface EmailWriteModalProps {
+  refreshScheduledEmails?: () => Promise<void>;
+  user_id?: string;
+  sender?: string;
+  onClose?: () => void;
+}
+
+export const EmailWriteModal: React.FC<EmailWriteModalProps> = ({ refreshScheduledEmails, user_id, sender, onClose }) => {
     const { handleDraft } = useMessageStore() as {handleDraft: () => void};
     const { draftMessage, setDraftMessage } = useMessageStore() as {draftMessage: string, setDraftMessage: (draftMessage: string) => void};
     const { draftSubject, setDraftSubject } = useMessageStore() as {draftSubject: string, setDraftSubject: (draftSubject: string) => void};
     const { recipient, setRecipient } = useMessageStore() as {recipient: string, setRecipient: (recipient: string) => void};
 
     const [loading, setLoading] = useState(false);
-    const { user } = useUser();
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
     const [showSchedule, setShowSchedule] = useState(false);
@@ -83,7 +88,7 @@ export const EmailWriteModal = () => {
                 recipient,
                 subject: draftSubject,
                 content: draftMessage,
-                sender: user?.emailAddresses[0].emailAddress
+                sender
             })
         })
         if (response.ok) {
@@ -119,17 +124,22 @@ export const EmailWriteModal = () => {
             setSuccess(null);
             return;
         }
+        if (!user_id || !sender) {
+            setError('User not found. Please log in.');
+            setSuccess(null);
+            return;
+        }
         setError(null);
         setLoading(true);
-        // You may want to use a different endpoint for scheduling
         const response = await fetch('/api/schedule', {
             method: 'POST',
             body: JSON.stringify({
+                user_id,
+                sender,
                 recipient,
                 subject: draftSubject,
                 content: draftMessage,
-                sender: user?.emailAddresses[0].emailAddress,
-                scheduledDate: getScheduledDateTime(),
+                scheduled_date: getScheduledDateTime(),
             })
         })
         if (response.ok) {
@@ -143,6 +153,10 @@ export const EmailWriteModal = () => {
             setError(null);
             setSuccess('Scheduled successfully!');
             setTimeout(() => setSuccess(null), 3000);
+            if (refreshScheduledEmails) {
+              refreshScheduledEmails();
+            }
+            if (onClose) onClose();
             console.log('Email scheduled successfully');
         } else {
             setLoading(false);
@@ -231,7 +245,10 @@ export const EmailWriteModal = () => {
         <CardFooter>
             <div className='flex justify-end gap-2 w-full'>
                 <Button type="button" variant="regular" onClick={handleDraft} disabled={loading}><BrainCircuit className='w-4 h-4' /> AI</Button>
-                <Button type="button" variant="outline" onClick={() => setShowSchedule(v => !v)} disabled={loading}>
+                <Button type="button" variant="outline" onClick={() => {
+                  setShowSchedule(v => !v);
+                  if (showSchedule && onClose) onClose();
+                }} disabled={loading}>
                   <CalendarClock className='w-4 h-4 mr-1' /> {showSchedule ? 'Undo Schedule' : 'Schedule'}
                 </Button>
                 {showSchedule ? (
