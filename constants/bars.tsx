@@ -1,15 +1,22 @@
 import { NavItem } from "@/types";
-import { Inbox, Star, Search, PenLine } from "lucide-react";
+import { Inbox, Star, Search, PenLine, Calendar } from "lucide-react";
 
 export const navItems: NavItem[] = [
   {
     label: "Wise Write",
     href: "/mail/write",
-    category: "write",
+    category: "wise-write",
     icon: <PenLine className="h-5 w-5" />,
     badge: (
       <span className="ml-auto text-xs font-medium text-yellow-600">🖊️</span>
     ),
+  },
+  {
+    label: "Easy Schedule",
+    href: "/mail/schedule",
+    category: "easy-schedule",
+    icon: <Calendar className="h-5 w-5" />,
+    badge: <span className="ml-auto text-xs font-medium text-black">🕒</span>,
   },
   {
     label: "All Mail",

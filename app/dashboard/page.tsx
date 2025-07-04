@@ -8,6 +8,7 @@ import EmailSearch from "@/components/dashboard/email-search/email-search";
 import EmailImportantMessages from "@/components/dashboard/email-important/email-important-messages";
 // import ComingSoon from "@/components/dashboard/coming-soon";
 import EmailWrite from "@/components/dashboard/email-write/email-write";
+import EmailSchedule from "@/components/dashboard/email-schedule/email-schedule";
 
 import { useCategoryStore } from "@/stores/useCategoryStore";
 import { Category } from "@/types";
@@ -16,7 +17,8 @@ import { useEffect } from "react";
 import { trackGtag } from "@/lib/gtag";
 
 const categoryComponents: Record<Category, React.ReactNode> = {
-  write: <EmailWrite />,
+  "wise-write": <EmailWrite />,
+  "easy-schedule": <EmailSchedule />,
   "all-mail": <EmailAllView />,
   "smart-search": <EmailSearch />,
   important: <EmailImportantMessages />,
