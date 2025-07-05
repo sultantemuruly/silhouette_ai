@@ -25,6 +25,8 @@ const EmailSchedule = () => {
   const { setCategory } = useCategoryStore();
   const [editMode, setEditMode] = useState(false);
   const [editFields, setEditFields] = useState({ subject: '', recipient: '', content: '', scheduled_date: '' });
+  const [modalError, setModalError] = useState<string | null>(null);
+  const [timezone] = useState(() => Intl.DateTimeFormat().resolvedOptions().timeZone);
 
   // const [isWriteModalOpen, setIsWriteModalOpen] = useState(false);
 
@@ -71,6 +73,21 @@ const EmailSchedule = () => {
 
   const handleEditSave = async () => {
     if (!selectedEmail) return;
+    // Validation: scheduled_date must be at least 5 minutes in the future and minutes must be a multiple of 5
+    const scheduledDate = new Date(editFields.scheduled_date);
+    const now = new Date();
+    const diffMs = scheduledDate.getTime() - now.getTime();
+    const diffMin = diffMs / 60000;
+    const minutes = scheduledDate.getMinutes();
+    if (diffMin < 5) {
+      setModalError('Scheduled time must be at least 5 minutes in the future.');
+      return;
+    }
+    if (minutes % 5 !== 0) {
+      setModalError('Minutes must be in 5-minute increments (e.g., 10, 15, 20, etc.).');
+      return;
+    }
+    setModalError(null);
     await fetch('/api/schedule', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
@@ -78,6 +95,7 @@ const EmailSchedule = () => {
         id: selectedEmail.id,
         user_id: user?.id,
         ...editFields,
+        timezone,
       }),
     });
     setModalOpen(false);
@@ -132,15 +150,6 @@ const EmailSchedule = () => {
         ) : (
           scheduledEmails.map(email => (
             <div key={email.id} onClick={() => handleCapsuleClick(email)} className="cursor-pointer">
-              <div className="flex items-center gap-2 mb-1">
-                <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
-                  email.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                  email.status === 'sent' ? 'bg-green-100 text-green-800' :
-                  'bg-red-100 text-red-800'
-                }`}>
-                  {email.status.charAt(0).toUpperCase() + email.status.slice(1)}
-                </span>
-              </div>
               <EmailCapsule
                 date={email.scheduled_date}
                 title={email.subject}
@@ -164,6 +173,7 @@ const EmailSchedule = () => {
           onDelete={handleDelete}
           onEditMode={setEditMode}
           onCancelEdit={() => setEditMode(false)}
+          error={modalError || undefined}
         />
       )}
     </>

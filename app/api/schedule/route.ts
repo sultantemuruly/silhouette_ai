@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
 import { scheduled_emails } from "@/db/schema";
 import { eq } from "drizzle-orm";
+import { DateTime } from 'luxon';
 
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
@@ -20,20 +21,39 @@ export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
         console.log('Received POST /api/schedule body:', body);
-        const { user_id, sender, recipient, subject, content, scheduled_date } = body;
+        const { user_id, sender, recipient, subject, content, scheduled_date, timezone } = body;
         if (!user_id || !sender || !recipient || !subject || !content || !scheduled_date) {
             console.log('Missing required fields:', { user_id, sender, recipient, subject, content, scheduled_date });
             return NextResponse.json({ error: "All fields are required" }, { status: 400 });
         }
-        console.log('Inserting scheduled email:', { user_id, sender, recipient, subject, content, scheduled_date });
+        let effectiveZone = timezone;
+        const kzTimezones = [
+            'Asia/Almaty',
+            'Asia/Aqtobe',
+            'Asia/Aqtau',
+            'Asia/Oral',
+            'Asia/Atyrau',
+            'Asia/West Kazakhstan',
+        ];
+        if (timezone && kzTimezones.includes(timezone)) {
+            effectiveZone = 'UTC+5';
+        }
+        let scheduledDateUtc: Date;
+        if (effectiveZone) {
+            scheduledDateUtc = DateTime.fromFormat(scheduled_date, "yyyy-MM-dd'T'HH:mm:ss", { zone: effectiveZone }).toUTC().toJSDate();
+        } else {
+            scheduledDateUtc = new Date(scheduled_date);
+        }
+        console.log('Inserting scheduled email:', { user_id, sender, recipient, subject, content, scheduled_date, timezone, scheduledDateUtc });
         const inserted = await db.insert(scheduled_emails).values({
-          user_id,
-          sender,
-          recipient,
-          subject,
-          content,
-          scheduled_date: new Date(scheduled_date),
-          status: 'pending',
+            user_id,
+            sender,
+            recipient,
+            subject,
+            content,
+            scheduled_date: scheduledDateUtc,
+            status: 'pending',
+            timezone,
         });
         return NextResponse.json(inserted);
     } catch (error) {
@@ -45,7 +65,7 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
     try {
         const body = await request.json();
-        const { id, user_id, subject, recipient, content, scheduled_date } = body;
+        const { id, user_id, subject, recipient, content, scheduled_date, timezone } = body;
         if (!id || !user_id) {
             return NextResponse.json({ error: "ID and User ID are required" }, { status: 400 });
         }
@@ -61,8 +81,26 @@ export async function PATCH(request: NextRequest) {
         if (email.status !== 'pending') {
             return NextResponse.json({ error: "Only pending emails can be updated" }, { status: 400 });
         }
+        let effectiveZone = timezone;
+        const kzTimezones = [
+            'Asia/Almaty',
+            'Asia/Aqtobe',
+            'Asia/Aqtau',
+            'Asia/Oral',
+            'Asia/Atyrau',
+            'Asia/West Kazakhstan',
+        ];
+        if (timezone && kzTimezones.includes(timezone)) {
+            effectiveZone = 'UTC+5';
+        }
+        let scheduledDateUtc: Date;
+        if (effectiveZone) {
+            scheduledDateUtc = DateTime.fromFormat(scheduled_date, "yyyy-MM-dd'T'HH:mm:ss", { zone: effectiveZone }).toUTC().toJSDate();
+        } else {
+            scheduledDateUtc = new Date(scheduled_date);
+        }
         await db.update(scheduled_emails)
-            .set({ subject, recipient, content, scheduled_date: new Date(scheduled_date) })
+            .set({ subject, recipient, content, scheduled_date: scheduledDateUtc, timezone })
             .where(eq(scheduled_emails.id, id));
         return NextResponse.json({ success: true });
     } catch (error) {

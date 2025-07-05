@@ -1,0 +1,1 @@
+ALTER TABLE scheduled_emails ADD COLUMN timezone varchar(64); 

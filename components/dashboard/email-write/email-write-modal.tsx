@@ -40,33 +40,51 @@ export const EmailWriteModal: React.FC<EmailWriteModalProps> = ({ refreshSchedul
     const [showSchedule, setShowSchedule] = useState(false);
     const [scheduledDay, setScheduledDay] = useState<string>(""); // YYYY-MM-DD
     const [scheduledHour, setScheduledHour] = useState<string>(""); // "0" to "23"
+    const [scheduledMinute, setScheduledMinute] = useState<string>("00"); // "00", "05", ... "55"
+    const [timezone] = useState(() => Intl.DateTimeFormat().resolvedOptions().timeZone);
 
     // Helper to get the current date/time in YYYY-MM-DD and hour
     function getMinDate() {
       const now = new Date();
       return now.toISOString().slice(0, 10);
     }
-    function getMinHour(selectedDate: string) {
+    function getNowParts() {
       const now = new Date();
-      if (selectedDate === getMinDate()) {
-        const nextHour = now.getHours() + 1;
-        if (nextHour > 23) {
-          // If it's past 23, user must pick tomorrow
-          return 24; // special value, will be handled in rendering
-        }
-        return nextHour;
-      }
-      return 0;
+      return {
+        hour: now.getHours(),
+        minute: now.getMinutes(),
+        date: now.toISOString().slice(0, 10),
+      };
     }
-    function isFutureDateTime(date: string, hour: string) {
-      if (!date || hour === "") return false;
-      const now = new Date();
-      const selected = new Date(date + 'T' + hour.padStart(2, '0') + ':00:00');
-      return selected > now;
+    function getAvailableHours(selectedDate: string) {
+      const { hour, date } = getNowParts();
+      if (selectedDate === date) {
+        // For today, include current hour if there is a valid minute
+        const validMinutes = getAvailableMinutes(selectedDate, hour.toString());
+        const hours = [];
+        if (validMinutes.length > 0) hours.push(hour);
+        for (let h = hour + 1; h <= 23; h++) hours.push(h);
+        return hours;
+      }
+      // For future dates, all hours
+      return Array.from({ length: 24 }, (_, i) => i);
+    }
+    function getAvailableMinutes(selectedDate: string, selectedHour: string) {
+      const { hour, minute, date } = getNowParts();
+      const mins: string[] = [];
+      for (let m = 0; m < 60; m += 5) {
+        if (selectedDate === date && parseInt(selectedHour) === hour) {
+          // Only allow minutes at least 5 min in the future
+          if (m > minute + 4) mins.push(m.toString().padStart(2, '0'));
+        } else {
+          mins.push(m.toString().padStart(2, '0'));
+        }
+      }
+      return mins;
     }
     function getScheduledDateTime() {
-      if (!scheduledDay || scheduledHour === "") return "";
-      return scheduledDay + 'T' + scheduledHour.padStart(2, '0') + ':00:00';
+      if (!scheduledDay || scheduledHour === "" || scheduledMinute === "") return "";
+      return scheduledDay + 'T' + scheduledHour.padStart(2, '0') + ':' + scheduledMinute.padStart(2, '0') + ':00';
     }
 
     const handleSend = async () => {
@@ -109,8 +127,8 @@ export const EmailWriteModal: React.FC<EmailWriteModalProps> = ({ refreshSchedul
     }
 
     const handleSchedule = async () => {
-        if (!recipient || !draftSubject || !draftMessage || !scheduledDay || scheduledHour === "") {
-            setError('All fields and schedule date/hour are required.');
+        if (!recipient || !draftSubject || !draftMessage || !scheduledDay || scheduledHour === "" || scheduledMinute === "") {
+            setError('All fields and schedule date/hour/minute are required.');
             setSuccess(null);
             return;
         }
@@ -119,8 +137,19 @@ export const EmailWriteModal: React.FC<EmailWriteModalProps> = ({ refreshSchedul
             setSuccess(null);
             return;
         }
-        if (!isFutureDateTime(scheduledDay, scheduledHour)) {
-            setError('Please select a future date and hour.');
+        // Validate scheduled time is at least 5 minutes in the future
+        const scheduledDate = new Date(getScheduledDateTime());
+        const now = new Date();
+        const diffMs = scheduledDate.getTime() - now.getTime();
+        const diffMin = diffMs / 60000;
+        const minutes = scheduledDate.getMinutes();
+        if (diffMin < 5) {
+            setError('Scheduled time must be at least 5 minutes in the future.');
+            setSuccess(null);
+            return;
+        }
+        if (minutes % 5 !== 0) {
+            setError('Minutes must be in 5-minute increments (e.g., 00, 05, 10, etc.).');
             setSuccess(null);
             return;
         }
@@ -142,6 +171,7 @@ export const EmailWriteModal: React.FC<EmailWriteModalProps> = ({ refreshSchedul
                 subject: draftSubject,
                 content: draftMessage,
                 scheduled_date: getScheduledDateTime(),
+                timezone,
             })
         })
         if (response.ok) {
@@ -151,6 +181,7 @@ export const EmailWriteModal: React.FC<EmailWriteModalProps> = ({ refreshSchedul
             setRecipient(''); 
             setScheduledDay("");
             setScheduledHour("");
+            setScheduledMinute("00");
             setShowSchedule(false);
             setError(null);
             setSuccess('Scheduled successfully!');
@@ -198,7 +229,7 @@ export const EmailWriteModal: React.FC<EmailWriteModalProps> = ({ refreshSchedul
                 </div>
                 {showSchedule && (
                   <div>
-                    <div className='text-md font-medium pb-2'>Schedule Date & Hour</div>
+                    <div className='text-md font-medium pb-2'>Schedule Date & Time</div>
                     <div className="flex items-center gap-1">
                       <Input
                         type="date"
@@ -206,38 +237,54 @@ export const EmailWriteModal: React.FC<EmailWriteModalProps> = ({ refreshSchedul
                         value={scheduledDay}
                         onChange={e => {
                           setScheduledDay(e.target.value);
-                          // If the selected date is today and the hour is less than min hour, reset hour
-                          if (e.target.value === getMinDate() && scheduledHour !== "" && parseInt(scheduledHour) < getMinHour(e.target.value)) {
-                            setScheduledHour("");
+                          // Reset hour/minute if not valid for new date
+                          const hours = getAvailableHours(e.target.value);
+                          if (!hours.includes(Number(scheduledHour))) {
+                            setScheduledHour(hours[0]?.toString() ?? '');
+                          }
+                          const mins = getAvailableMinutes(e.target.value, scheduledHour);
+                          if (!mins.includes(scheduledMinute)) {
+                            setScheduledMinute(mins[0] ?? '');
                           }
                         }}
                         disabled={loading}
                         className='hover:border-blue-600 focus:ring-blue-600 w-[140px]'
                       />
-                      <Input
-                        type="number"
-                        min={scheduledDay === getMinDate() ? getMinHour(scheduledDay) : 0}
-                        max={23}
+                      <select
                         value={scheduledHour}
                         onChange={e => {
-                          const val = e.target.value;
-                          if (val === "") setScheduledHour("");
-                          else {
-                            const minHour = scheduledDay === getMinDate() ? getMinHour(scheduledDay) : 0;
-                            const num = Math.max(minHour, Math.min(23, parseInt(val)));
-                            setScheduledHour(num.toString());
+                          setScheduledHour(e.target.value);
+                          // Reset minute if not valid for new hour
+                          const mins = getAvailableMinutes(scheduledDay, e.target.value);
+                          if (!mins.includes(scheduledMinute)) {
+                            setScheduledMinute(mins[0] ?? '');
                           }
                         }}
-                        placeholder="Hour"
-                        disabled={loading || !scheduledDay || (scheduledDay === getMinDate() && getMinHour(scheduledDay) === 24)}
-                        className='w-14 ml-2 hover:border-blue-600 focus:ring-blue-600 text-center'
-                      />
-                      <span className="ml-1 text-base text-gray-700">hour</span>
+                        disabled={loading || !scheduledDay}
+                        className='w-16 ml-2 border rounded px-2 py-1 text-center hover:border-blue-600 focus:ring-blue-600'
+                      >
+                        <option value="" disabled>Select hour</option>
+                        {getAvailableHours(scheduledDay).map(h => (
+                          <option key={h} value={h.toString().padStart(2, '0')}>{h.toString().padStart(2, '0')}</option>
+                        ))}
+                      </select>
+                      <select
+                        value={scheduledMinute}
+                        onChange={e => setScheduledMinute(e.target.value)}
+                        disabled={loading || !scheduledDay || !scheduledHour}
+                        className='w-16 ml-2 border rounded px-2 py-1 text-center hover:border-blue-600 focus:ring-blue-600'
+                      >
+                        <option value="" disabled>Select min</option>
+                        {getAvailableMinutes(scheduledDay, scheduledHour).map(val => (
+                          <option key={val} value={val}>{val}</option>
+                        ))}
+                      </select>
+                      <span className="ml-1 text-base text-gray-700">hour:min</span>
                     </div>
-                    {scheduledDay === getMinDate() && getMinHour(scheduledDay) === 24 && (
-                      <div className="text-xs text-red-500 mt-1">No more hours available today. Please select a future date.</div>
+                    {scheduledDay === getMinDate() && getAvailableHours(scheduledDay).length === 0 && (
+                      <div className="text-xs text-red-500 mt-1">No more times available today. Please select a future date.</div>
                     )}
-                    <div className="text-xs text-gray-500 mt-1">Minutes will always be 00. Only future hours are allowed.</div>
+                    <div className="text-xs text-gray-500 mt-1">Minutes must be in 5-minute increments. Only future times are allowed.</div>
                   </div>
                 )}
                 {error && <div className="text-red-500 text-sm pt-1">{error}</div>}

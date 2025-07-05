@@ -27,10 +27,10 @@ const EmailCapsule: React.FC<EmailCapsuleProps> = ({ date, title, recipient, con
   return (
     <div className="bg-white rounded-lg shadow p-4 flex flex-col justify-between h-48 border border-gray-100 hover:shadow-md transition-shadow duration-200 relative overflow-hidden">
       {/* Status badge at top right */}
-      <span className={`absolute top-2 right-2 text-xs px-2 py-0.5 rounded-full font-semibold z-10 max-w-[90px] truncate text-ellipsis whitespace-nowrap ${
-        status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-        status === 'sent' ? 'bg-green-100 text-green-800' :
-        'bg-red-100 text-red-800'
+      <span className={`absolute border border-gray-200 top-2 right-2 text-xs px-2 py-0.5 rounded-full font-semibold z-10 max-w-[90px] truncate text-ellipsis whitespace-nowrap ${
+        status === 'pending' ? 'bg-yellow-200 text-yellow-900' :
+        status === 'sent' ? 'bg-green-200 text-green-900' :
+        'bg-red-200 text-red-900'
       }`}>
         {status.charAt(0).toUpperCase() + status.slice(1)}
       </span>
