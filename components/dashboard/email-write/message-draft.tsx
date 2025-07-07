@@ -59,29 +59,6 @@ const MessageDraft: React.FC<MessageDraftProps> = ({ user_id, sender }) => {
       }
     }, [date]);
 
-    // Helper: Try to extract subject/body from AI reply (robust for markdown)
-    function parseAIReply(reply: string) {
-      // Match both markdown (**Subject:**) and plain (Subject:)
-      const subjectRegex = /\*\*?Subject:?\*\*?\s*:?\s*(.*)/i;
-      const bodyRegex = /\*\*?Body:?\*\*?\s*:?\s*([\s\S]*)/i;
-      const subjectMatch = reply.match(subjectRegex);
-      const bodyMatch = reply.match(bodyRegex);
-      // If both present, ensure body is after subject
-      if (subjectMatch && bodyMatch) {
-        // If body comes after subject, extract accordingly
-        const subject = subjectMatch[1].split(/\*\*?Body:?\*\*?/i)[0].trim();
-        const body = bodyMatch[1].trim();
-        return { subject, body };
-      }
-      if (bodyMatch) {
-        return { subject: undefined, body: bodyMatch[1].trim() };
-      }
-      if (subjectMatch) {
-        return { subject: subjectMatch[1].trim(), body: undefined };
-      }
-      return null;
-    }
-
     // Helper to get the current date/time in YYYY-MM-DD and hour
     function getMinDate() {
       const now = new Date();
@@ -293,14 +270,23 @@ const MessageDraft: React.FC<MessageDraftProps> = ({ user_id, sender }) => {
           body: JSON.stringify({ prompt: input, subject: draftSubject, body: draftMessage }),
         });
         const data = await res.json();
-        const aiContent = data.reply || '';
-        // Try to parse for subject/body
-        const parsed = parseAIReply(aiContent);
-        if (parsed) {
-          if (parsed.subject) setDraftSubject(parsed.subject);
-          if (parsed.body) setDraftMessage(parsed.body);
+        // Use structured fields from backend
+        const { recipient: aiRecipient, subject: aiSubject, body: aiBody, date: aiDate, message: aiMessage } = data;
+        if (aiRecipient) setRecipient(aiRecipient);
+        if (aiSubject) setDraftSubject(aiSubject);
+        if (aiBody) setDraftMessage(aiBody);
+        if (aiDate) {
+          setDate(aiDate);
+          // Also update date picker state
+          const d = new Date(aiDate);
+          if (!isNaN(d.getTime())) {
+            setScheduledDay(d.toISOString().slice(0, 10));
+            setScheduledHour(d.getHours().toString().padStart(2, '0'));
+            setScheduledMinute(d.getMinutes().toString().padStart(2, '0'));
+            setShowSchedule(true);
+          }
         }
-        setChat(prev => [...prev, { role: 'ai', content: aiContent }]);
+        setChat(prev => [...prev, { role: 'ai', content: aiMessage || '' }]);
       } catch {
         setChat(prev => [...prev, { role: 'ai', content: 'Sorry, something went wrong.' }]);
       }
