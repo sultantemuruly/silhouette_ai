@@ -35,3 +35,12 @@ export const scheduled_emails = pgTable("scheduled_emails", {
   status: varchar("status", { length: 16 }).notNull().default('pending'),
   timezone: varchar("timezone", { length: 64 }),
 });
+
+export const email_templates = pgTable("email_templates", {
+  id: serial("id").primaryKey(),
+  user_id: varchar("user_id", { length: 64 }).notNull().references(() => users.clerk_id),
+  name: varchar("name", { length: 128 }).notNull().default('Untitled'),
+  prompt: text().notNull(),
+  html: text().notNull(), 
+  created_at: timestamp("created_at").defaultNow().notNull(),
+});
