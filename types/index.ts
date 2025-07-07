@@ -118,4 +118,10 @@ export type DraftState = {
   setDraftMessage: (draftMessage: string) => void;
   draftTitle: string;
   setDraftTitle: (draftTitle: string) => void;
+  recipient: string;
+  setRecipient: (recipient: string) => void;
+  date: string;
+  setDate: (date: string) => void;
+  showSchedule: boolean;
+  setShowSchedule: (showSchedule: boolean) => void;
 }
