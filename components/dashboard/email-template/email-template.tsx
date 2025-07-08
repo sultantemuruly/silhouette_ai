@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button'
 import React, { useState, useEffect } from 'react'
 import TemplateGenerate from './template-generate'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import GrapesJSEditor from './grapesjs-editor';
 
 interface EmailTemplateType {
   id: number;
@@ -11,6 +12,11 @@ interface EmailTemplateType {
   created_at: string;
 }
 
+// Add a type for the global property
+interface WindowWithTemplate extends Window {
+  _originalTemplateHtml?: string;
+}
+
 const EmailTemplate = () => {
   const [modalOpen, setModalOpen] = useState(false)
   const [templates, setTemplates] = useState<EmailTemplateType[]>([])
@@ -18,7 +24,6 @@ const EmailTemplate = () => {
   const [error, setError] = useState('')
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editName, setEditName] = useState('');
-  const [editHtml, setEditHtml] = useState('');
   const [editLoading, setEditLoading] = useState(false);
   const [previewTemplate, setPreviewTemplate] = useState<EmailTemplateType | null>(null);
 
@@ -65,35 +70,13 @@ const EmailTemplate = () => {
   const startEdit = (t: EmailTemplateType) => {
     setEditingId(t.id);
     setEditName(t.name);
-    setEditHtml(t.html);
+    // Store the original template for injection on save
+    (window as WindowWithTemplate)._originalTemplateHtml = t.html;
   };
 
   const cancelEdit = () => {
     setEditingId(null);
     setEditName('');
-    setEditHtml('');
-  };
-
-  const handleEditSave = async (id: number) => {
-    setEditLoading(true);
-    try {
-      const res = await fetch('/api/email-templates', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, name: editName, html: editHtml }),
-      });
-      const data = await res.json();
-      if (res.ok && data.template) {
-        setTemplates(templates => templates.map(t => t.id === id ? { ...t, name: data.template.name, html: data.template.html } : t));
-        cancelEdit();
-      } else {
-        alert(data.error || 'Failed to update template.');
-      }
-    } catch {
-      alert('Network error.');
-    } finally {
-      setEditLoading(false);
-    }
   };
 
   return (
@@ -115,20 +98,23 @@ const EmailTemplate = () => {
           <div className='text-gray-500'>No templates saved yet.</div>
         ) : (
           <div className='grid gap-4'>
-            {templates.map(t => (
-              <div key={t.id} className='border rounded p-3 bg-white shadow flex items-center justify-between'>
-                <div className='flex flex-col gap-1 w-2/3'>
-                  <div className='font-semibold'>{t.name}</div>
-                  <div className='text-xs text-gray-400 mb-1'>Created: {new Date(t.created_at).toLocaleString()}</div>
-                  <div className='border rounded bg-gray-50 overflow-hidden h-[60px] w-full mb-1'>
-                    <div className='w-full h-full' style={{ pointerEvents: 'none' }} dangerouslySetInnerHTML={{ __html: t.html }} />
+            {templates.map(t => {
+              console.log('Preview HTML:', t.html);
+              return (
+                <div key={t.id} className='border rounded p-3 bg-white shadow flex items-center justify-between'>
+                  <div className='flex flex-col gap-1 w-2/3'>
+                    <div className='font-semibold'>{t.name}</div>
+                    <div className='text-xs text-gray-400 mb-1'>Created: {new Date(t.created_at).toLocaleString()}</div>
+                    <div className='border rounded bg-gray-50 overflow-hidden h-[60px] w-full mb-1'>
+                      <div className='w-full h-full' style={{ pointerEvents: 'none' }} dangerouslySetInnerHTML={{ __html: t.html }} />
+                    </div>
+                  </div>
+                  <div className='flex flex-col gap-2 items-end'>
+                    <Button size='sm' variant='outline' onClick={() => setPreviewTemplate(t)}>Open</Button>
                   </div>
                 </div>
-                <div className='flex flex-col gap-2 items-end'>
-                  <Button size='sm' variant='outline' onClick={() => setPreviewTemplate(t)}>Open</Button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -145,16 +131,33 @@ const EmailTemplate = () => {
                 disabled={editLoading}
                 maxLength={128}
               />
-              <textarea
-                className='border rounded p-2 bg-gray-50 min-h-[80px]'
-                value={editHtml}
-                onChange={e => setEditHtml(e.target.value)}
+              <GrapesJSEditor
+                initialHtml={templates.find(t => t.id === editingId)?.html}
+                onSave={async (newHtml) => {
+                  setEditLoading(true);
+                  try {
+                    const res = await fetch('/api/email-templates', {
+                      method: 'PATCH',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ id: editingId, name: editName, html: newHtml }),
+                    });
+                    const data = await res.json();
+                    if (res.ok && data.template) {
+                      setTemplates(templates => templates.map(t => t.id === editingId ? { ...t, name: data.template.name, html: data.template.html } : t));
+                      cancelEdit();
+                    } else {
+                      alert(data.error || 'Failed to update template.');
+                    }
+                  } catch {
+                    alert('Network error.');
+                  } finally {
+                    setEditLoading(false);
+                  }
+                }}
                 disabled={editLoading}
               />
               <div className='flex gap-2 mt-2'>
-                <Button size='sm' onClick={() => handleEditSave(editingId)} disabled={editLoading || !editName.trim() || !editHtml.trim()}>
-                  {editLoading ? 'Saving...' : 'Save'}
-                </Button>
+                {/* Save button is now in GrapesJSEditor */}
                 <Button size='sm' variant='outline' onClick={cancelEdit} disabled={editLoading}>Cancel</Button>
               </div>
             </div>
