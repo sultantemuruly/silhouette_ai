@@ -279,15 +279,18 @@ export const EmailWriteModal: React.FC<EmailWriteModalProps> = ({ refreshSchedul
     const handleTemplateSelect = (id: string) => {
       if (!id) {
         setSelectedTemplate(null);
-        setVisualHtml('');
         setIsGraphicMessage(false);
+        setDraftMessage(""); // Clear draftMessage when no template
+        console.log('[TemplateSelect] Cleared template, draftMessage reset to empty');
         return;
       }
       const t = templates.find(t => t.id === Number(id));
       if (t) {
         setSelectedTemplate(t);
-        setVisualHtml(t.html);
         setIsGraphicMessage(true);
+        setDraftMessage(t.html); // Set draftMessage to template HTML
+        console.log('[TemplateSelect] Selected template:', t);
+        console.log('[TemplateSelect] Setting draftMessage to:', t.html);
       }
     };
 

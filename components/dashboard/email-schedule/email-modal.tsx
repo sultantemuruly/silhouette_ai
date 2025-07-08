@@ -217,13 +217,7 @@ const EmailModal: React.FC<EmailModalProps> = ({
           )}
           <div>
             <label className="block text-sm font-medium mb-1">Content</label>
-            <textarea
-              name="content"
-              className="w-full border rounded px-3 py-2 text-sm min-h-[100px] resize-none"
-              value={editFields.content}
-              onChange={onEditChange}
-              readOnly={!isPending || !editMode}
-            />
+            <div className="email-message-html" dangerouslySetInnerHTML={{ __html: editFields.content }} />
           </div>
           <div className="flex justify-between items-center gap-2 mt-2">
             <div className="flex items-center gap-2">

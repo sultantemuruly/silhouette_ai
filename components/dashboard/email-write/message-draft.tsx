@@ -175,12 +175,17 @@ const MessageDraft: React.FC<MessageDraftProps> = ({ user_id, sender }) => {
       if (!id) {
         setSelectedTemplate(null);
         setIsGraphicMessage(false);
+        setDraftMessage(""); // Clear draftMessage when no template
+        console.log('[TemplateSelect] Cleared template, draftMessage reset to empty');
         return;
       }
       const t = templates.find(t => t.id === Number(id));
       if (t) {
         setSelectedTemplate(t);
         setIsGraphicMessage(true);
+        setDraftMessage(t.html); // Set draftMessage to template HTML
+        console.log('[TemplateSelect] Selected template:', t);
+        console.log('[TemplateSelect] Setting draftMessage to:', t.html);
       }
     };
 
@@ -190,9 +195,17 @@ const MessageDraft: React.FC<MessageDraftProps> = ({ user_id, sender }) => {
       setSendSuccess(null);
       setScheduleError(null);
       setScheduleSuccess(null);
+      // Determine message content: use template HTML if selected, else draftMessage
+      const messageContent = isGraphicMessage ? (draftMessage || selectedTemplate?.html || "") : draftMessage;
+      console.log('[FormSubmit] recipient:', recipient);
+      console.log('[FormSubmit] draftSubject:', draftSubject);
+      console.log('[FormSubmit] draftMessage:', draftMessage);
+      console.log('[FormSubmit] selectedTemplate:', selectedTemplate);
+      console.log('[FormSubmit] isGraphicMessage:', isGraphicMessage);
+      console.log('[FormSubmit] messageContent:', messageContent);
       if (showSchedule) {
-        // Schedule validation (same as before)
-        if (!recipient || !draftSubject || !draftMessage || !scheduledDay || scheduledHour === "" || scheduledMinute === "") {
+        // Schedule validation (updated)
+        if (!recipient || !draftSubject || !messageContent || !scheduledDay || scheduledHour === "" || scheduledMinute === "") {
           setScheduleError('All fields and schedule date/hour/minute are required.');
           setScheduleSuccess(null);
           return;
@@ -233,7 +246,7 @@ const MessageDraft: React.FC<MessageDraftProps> = ({ user_id, sender }) => {
               sender,
               recipient,
               subject: draftSubject,
-              content: draftMessage,
+              content: messageContent,
               scheduled_date: getScheduledDateTime(),
               timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
             })
@@ -261,8 +274,8 @@ const MessageDraft: React.FC<MessageDraftProps> = ({ user_id, sender }) => {
         setLoading(false);
         return;
       } else {
-        // Send validation
-        if (!recipient || !draftSubject || !draftMessage) {
+        // Send validation (updated)
+        if (!recipient || !draftSubject || !messageContent) {
           setSendError('All fields are required.');
           setSendSuccess(null);
           return;
@@ -280,7 +293,7 @@ const MessageDraft: React.FC<MessageDraftProps> = ({ user_id, sender }) => {
             body: JSON.stringify({
               recipient,
               subject: draftSubject,
-              content: draftMessage,
+              content: messageContent,
             })
           });
           if (res.ok) {
