@@ -147,6 +147,8 @@ const MessageDraft: React.FC<MessageDraftProps> = ({ user_id, sender }) => {
 
     const [isGraphicMessage, setIsGraphicMessage] = useState(false);
     const [showVisualEditor, setShowVisualEditor] = useState(false);
+    const [aiHtml, setAiHtml] = useState<string | null>(null);
+    const [aiLoading, setAiLoading] = useState(false);
 
     // Add template state and fetching logic
     const [templates, setTemplates] = useState<{ id: number; name: string; html: string; prompt: string; created_at: string; }[]>([]);
@@ -303,31 +305,54 @@ const MessageDraft: React.FC<MessageDraftProps> = ({ user_id, sender }) => {
     const handleSend = async () => {
       if (!input.trim()) return;
       setLoading(true);
+      setAiLoading(false);
       setChat(prev => [...prev, { role: 'user', content: input }]);
       try {
-        const res = await fetch('/api/ai-chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt: input, subject: draftSubject, body: draftMessage }),
-        });
-        const data = await res.json();
-        // Use structured fields from backend
-        const { recipient: aiRecipient, subject: aiSubject, body: aiBody, date: aiDate, message: aiMessage } = data;
-        if (aiRecipient) setRecipient(aiRecipient);
-        if (aiSubject) setDraftSubject(aiSubject);
-        if (aiBody) setDraftMessage(aiBody);
-        if (aiDate) {
-          setDate(aiDate);
-          // Also update date picker state
-          const d = new Date(aiDate);
-          if (!isNaN(d.getTime())) {
-            setScheduledDay(d.toISOString().slice(0, 10));
-            setScheduledHour(d.getHours().toString().padStart(2, '0'));
-            setScheduledMinute(d.getMinutes().toString().padStart(2, '0'));
-            setShowSchedule(true);
+        // If in visual mode, send current HTML to AI
+        if (isGraphicMessage && showVisualEditor) {
+          setAiLoading(true);
+          const currentHtml = selectedTemplate?.html || draftMessage;
+          const res = await fetch('/api/ai-chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: input, currentHtml }),
+          });
+          const data = await res.json();
+          // Expect AI to return { html: ... }
+          if (data.html) {
+            setAiHtml(data.html);
+            setDraftMessage(data.html);
+            setChat(prev => [...prev, { role: 'ai', content: 'Template updated!' }]);
+          } else {
+            setChat(prev => [...prev, { role: 'ai', content: data.message || 'AI did not return HTML.' }]);
           }
+          setAiLoading(false);
+        } else {
+          // Plain text mode: existing logic
+          const res = await fetch('/api/ai-chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ prompt: input, subject: draftSubject, body: draftMessage }),
+          });
+          const data = await res.json();
+          // Use structured fields from backend
+          const { recipient: aiRecipient, subject: aiSubject, body: aiBody, date: aiDate, message: aiMessage } = data;
+          if (aiRecipient) setRecipient(aiRecipient);
+          if (aiSubject) setDraftSubject(aiSubject);
+          if (aiBody) setDraftMessage(aiBody);
+          if (aiDate) {
+            setDate(aiDate);
+            // Also update date picker state
+            const d = new Date(aiDate);
+            if (!isNaN(d.getTime())) {
+              setScheduledDay(d.toISOString().slice(0, 10));
+              setScheduledHour(d.getHours().toString().padStart(2, '0'));
+              setScheduledMinute(d.getMinutes().toString().padStart(2, '0'));
+              setShowSchedule(true);
+            }
+          }
+          setChat(prev => [...prev, { role: 'ai', content: aiMessage || '' }]);
         }
-        setChat(prev => [...prev, { role: 'ai', content: aiMessage || '' }]);
       } catch {
         setChat(prev => [...prev, { role: 'ai', content: 'Sorry, something went wrong.' }]);
       }
@@ -417,7 +442,9 @@ const MessageDraft: React.FC<MessageDraftProps> = ({ user_id, sender }) => {
                   initialHtml={selectedTemplate?.html || draftMessage}
                   onSave={handleVisualSave}
                   disabled={loading}
+                  externalHtml={aiHtml || undefined}
                 />
+                {aiLoading && <div className="text-blue-600 mt-2">AI is updating the template...</div>}
               </div>
             </div>
           )}

@@ -43,7 +43,39 @@ function extractFallback(prompt: string) {
 }
 
 export async function POST(req: NextRequest) {
-  const { prompt } = await req.json();
+  const { prompt, subject: reqSubject, body: reqBody, currentHtml } = await req.json();
+
+  if (currentHtml) {
+    // Visual/template mode: AI should return only modified HTML
+    const apiKey = process.env.AZURE_OPENAI_API_KEY!;
+    const endpoint = process.env.AZURE_OPENAI_API_ENDPOINT_1!;
+    const url = endpoint;
+    const systemPrompt = `You are an email template editor. The user will give you an HTML email template and an instruction.\nApply the instruction to the HTML and return ONLY the modified HTML. Do not include explanations or JSON. If the instruction is unclear, do your best to make a reasonable change.`;
+    const userPrompt = `Current HTML:\n${currentHtml}\n\nInstruction: ${prompt}`;
+    const messages = [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt }
+    ];
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "api-key": apiKey,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        messages,
+        max_tokens: 2048,
+        temperature: 0.7
+      })
+    });
+    if (!response.ok) {
+      return NextResponse.json({ error: "Failed to fetch from Azure OpenAI" }, { status: 500 });
+    }
+    const data = await response.json();
+    const aiReply = data.choices?.[0]?.message?.content || "";
+    // Return only the HTML
+    return NextResponse.json({ html: aiReply });
+  }
 
   const apiKey = process.env.AZURE_OPENAI_API_KEY!;
   const endpoint = process.env.AZURE_OPENAI_API_ENDPOINT_1!;
@@ -114,8 +146,8 @@ export async function POST(req: NextRequest) {
   }
 
   let recipient: string|null = null;
-  let subject: string|null = null;
-  let body: string|null = null;
+  let subject: string|null = reqSubject || null;
+  let body: string|null = reqBody || null;
   let date: string|null = null;
 
   let needsFallback = true;

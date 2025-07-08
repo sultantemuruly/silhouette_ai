@@ -12,9 +12,14 @@ interface GrapesJSEditorProps {
   initialHtml?: string;
   onSave: (html: string) => void;
   disabled?: boolean;
+  /**
+   * If provided, will update the editor's content when this value changes.
+   * Useful for AI-powered editing or external updates.
+   */
+  externalHtml?: string;
 }
 
-const GrapesJSEditor: React.FC<GrapesJSEditorProps> = ({ initialHtml, onSave, disabled }) => {
+const GrapesJSEditor: React.FC<GrapesJSEditorProps> = ({ initialHtml, onSave, disabled, externalHtml }) => {
   const editorRef = useRef<HTMLDivElement>(null);
   const grapesEditor = useRef<Editor | null>(null);
   const [exporting, setExporting] = useState(false);
@@ -128,6 +133,13 @@ const GrapesJSEditor: React.FC<GrapesJSEditorProps> = ({ initialHtml, onSave, di
       grapesEditor.current = null;
     };
   }, []);
+
+  // Update editor content if externalHtml changes
+  React.useEffect(() => {
+    if (externalHtml && grapesEditor.current) {
+      grapesEditor.current.setComponents(externalHtml);
+    }
+  }, [externalHtml]);
 
   const getHtmlAndCss = () => {
     if (!grapesEditor.current) return { html: '', css: '' };
