@@ -1,7 +1,7 @@
 import { NavItem } from "@/types";
 import { Inbox, Star, Search, PenLine, Calendar, LayoutTemplate } from "lucide-react";
 
-export const navItems: NavItem[] = [
+export const navItemsActive: NavItem[] = [
   {
     label: "Wise Write",
     href: "/mail/write",
@@ -26,7 +26,10 @@ export const navItems: NavItem[] = [
     badge: (
       <span className="ml-auto text-xs font-medium text-yellow-600">🎨</span>
     ),
-  },
+  }
+];
+
+export const navItemsComingSoon: NavItem[] = [
   {
     label: "All Mail",
     href: "/mail/all",

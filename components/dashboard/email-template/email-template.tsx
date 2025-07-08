@@ -101,18 +101,22 @@ const EmailTemplate = () => {
         ) : (
           <div className='grid gap-4'>
             {templates.map(t => {
-              console.log('Preview HTML:', t.html);
               return (
-                <div key={t.id} className='border rounded p-3 bg-white shadow flex items-center justify-between'>
-                  <div className='flex flex-col gap-1 w-2/3'>
-                    <div className='font-semibold'>{t.name}</div>
-                    <div className='text-xs text-gray-400 mb-1'>Created: {new Date(t.created_at).toLocaleString()}</div>
-                    <div className='border rounded bg-gray-50 overflow-hidden h-[60px] w-full mb-1'>
-                      <div className='w-full h-full' style={{ pointerEvents: 'none' }} dangerouslySetInnerHTML={{ __html: t.html }} />
+                <div key={t.id} className='border rounded p-3 bg-white shadow flex flex-col relative'>
+                  <div className='flex justify-between items-start mb-2'>
+                    <div className='flex flex-col gap-1'>
+                      <div className='font-semibold'>{t.name}</div>
+                      <div className='text-xs text-gray-400'>Created: {new Date(t.created_at).toLocaleString()}</div>
                     </div>
+                    <Button size='sm' variant='outline' onClick={() => setPreviewTemplate(t)} className='ml-2'>Open</Button>
                   </div>
-                  <div className='flex flex-col gap-2 items-end'>
-                    <Button size='sm' variant='outline' onClick={() => setPreviewTemplate(t)}>Open</Button>
+                  <div className='border rounded bg-gray-50 w-full flex-1'>
+                    <iframe
+                      srcDoc={t.html}
+                      style={{ width: '100%', border: 'none', minHeight: 200 }}
+                      sandbox=""
+                      title={`template-preview-${t.id}`}
+                    />
                   </div>
                 </div>
               );

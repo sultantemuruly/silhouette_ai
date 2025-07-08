@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
 import { useCategoryStore } from "@/stores/useCategoryStore";
-import { navItems } from "@/constants/bars";
+import { navItemsActive, navItemsComingSoon } from "@/constants/bars";
 
 interface SidebarProps {
   onCategoryChange?: (category: string) => void;
@@ -22,7 +22,7 @@ export function Sidebar({ onCategoryChange }: SidebarProps) {
       <ScrollArea className="h-full px-4 py-6">
         {/* Main nav */}
         <nav className="space-y-1">
-          {navItems.map((item) => (
+          {navItemsActive.map((item) => (
             <Button
               key={item.href}
               onClick={() => {
@@ -37,9 +37,20 @@ export function Sidebar({ onCategoryChange }: SidebarProps) {
               {item.badge}
             </Button>
           ))}
-        </nav>
 
-        <Separator className="my-4" />
+          <Separator className="my-4" />
+          <div className="text-sm font-medium">Coming Soon!</div>
+          {navItemsComingSoon.map((item) => (
+            <Button key={item.href} onClick={() => {
+              setCategory(item.category);
+              if (onCategoryChange) onCategoryChange(item.category);
+            }} className="flex items-center px-3 py-2 rounded-md" variant={selectedCategory === item.category ? `regular` : `ghost`}>
+              {item.icon}
+              <span className="ml-3 text-sm font-medium">{item.label}</span>
+              {item.badge}
+            </Button>
+          ))}
+        </nav>
       </ScrollArea>
     </aside>
   );
