@@ -9,7 +9,7 @@ export async function POST(req: Request) {
       from: "Silhouette AI <noreply@silhai.com>",
       to: [recipient],
       subject,
-      react:`
+      html:`
           <h3>${sender} is sending you:</h3>
           <p>${content.replace(/\n/g, "<br>")}</p>
         `,

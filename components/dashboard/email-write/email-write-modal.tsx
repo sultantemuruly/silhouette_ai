@@ -3,6 +3,7 @@
 import React, { useState } from 'react'
 import { useRecipient, useSetRecipient, useDate, useSetDate, useMessageStore, useShowSchedule, useSetShowSchedule } from '@/stores/useMessageStore'
 import TextareaAutosize from 'react-textarea-autosize';
+import dynamic from 'next/dynamic';
 
 import {
     Card,
@@ -17,8 +18,18 @@ import { Button } from '@/components/ui/button'
 import { BrainCircuit, Send, CalendarClock } from 'lucide-react'
 import { Loader } from '@/components/ui/loader'
 
+const GrapesJSEditor = dynamic(() => import('../email-template/grapesjs-editor'), { ssr: false });
+
 function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+interface EmailTemplateType {
+  id: number;
+  name: string;
+  html: string;
+  prompt: string;
+  created_at: string;
 }
 
 interface EmailWriteModalProps {
@@ -46,6 +57,27 @@ export const EmailWriteModal: React.FC<EmailWriteModalProps> = ({ refreshSchedul
     const [scheduledHour, setScheduledHour] = useState<string>("");
     const [scheduledMinute, setScheduledMinute] = useState<string>("00");
     const [timezone] = useState(() => Intl.DateTimeFormat().resolvedOptions().timeZone);
+    const [showVisualEditor, setShowVisualEditor] = useState(false);
+    const [templates, setTemplates] = useState<EmailTemplateType[]>([]);
+    const [templatesLoading, setTemplatesLoading] = useState(false);
+    const [templatesError, setTemplatesError] = useState('');
+    const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplateType | null>(null);
+    const [visualHtml, setVisualHtml] = useState<string>('');
+    const [isGraphicMessage, setIsGraphicMessage] = useState(false);
+
+    // Fetch templates on mount
+    React.useEffect(() => {
+      setTemplatesLoading(true);
+      setTemplatesError('');
+      fetch('/api/email-templates')
+        .then(res => res.json())
+        .then(data => {
+          if (data.templates) setTemplates(data.templates);
+          else setTemplatesError(data.error || 'Failed to fetch templates.');
+        })
+        .catch(() => setTemplatesError('Network error.'))
+        .finally(() => setTemplatesLoading(false));
+    }, []);
 
     // Helper to get the current date/time in YYYY-MM-DD and hour
     function getMinDate() {
@@ -243,12 +275,52 @@ export const EmailWriteModal: React.FC<EmailWriteModalProps> = ({ refreshSchedul
         }
     }
 
+    // Handle template selection
+    const handleTemplateSelect = (id: string) => {
+      if (!id) {
+        setSelectedTemplate(null);
+        setVisualHtml('');
+        setIsGraphicMessage(false);
+        return;
+      }
+      const t = templates.find(t => t.id === Number(id));
+      if (t) {
+        setSelectedTemplate(t);
+        setVisualHtml(t.html);
+        setIsGraphicMessage(true);
+      }
+    };
+
+    // Handle save from GrapesJS
+    const handleVisualSave = (html: string) => {
+      setDraftMessage(html);
+      setShowVisualEditor(false);
+      setIsGraphicMessage(true);
+    };
+
+    // When user clicks Compose with Visual Editor
+    const handleOpenVisualEditor = () => {
+      setShowVisualEditor(true);
+      setIsGraphicMessage(true);
+    };
+
+    // When user switches back to plain text
+    const handleSwitchToPlain = () => {
+      setShowVisualEditor(false);
+      setIsGraphicMessage(false);
+      setSelectedTemplate(null);
+      setVisualHtml('');
+    };
+
+    // Helper to check if draftMessage is HTML
+    const isHtml = (str: string) => /<([A-Za-z][A-Za-z0-9]*)\b[^>]*>(.*?)<\/\1>/.test(str);
+
   return (
     <Card>
         <CardHeader>
             <CardTitle>Write Email with AI</CardTitle>
             <CardDescription>
-              Compose your email and use AI assistance to generate or improve your message.
+              Compose your email and use AI assistance to generate or improve your message. You can also use a saved template and edit visually.
             </CardDescription>
         </CardHeader>
         <form
@@ -268,10 +340,64 @@ export const EmailWriteModal: React.FC<EmailWriteModalProps> = ({ refreshSchedul
                     <div className='text-md font-medium pb-2'>Subject</div>
                     <Input disabled={loading} required value={draftSubject} onChange={(e) => setDraftSubject(e.target.value)} type="text" placeholder="Enter subject" className='hover:border-blue-600 focus:ring-blue-600'/>
                 </div>
-                <div>
+                {/* Template selection and visual editor controls */}
+                <div className="flex flex-col gap-2">
+                  <div className="flex gap-2 items-center">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleOpenVisualEditor}
+                      disabled={!selectedTemplate || !selectedTemplate.id || templatesLoading || loading}
+                    >
+                      Compose with Visual Editor
+                    </Button>
+                    <select
+                      className="border rounded p-2 text-sm"
+                      value={selectedTemplate?.id || ''}
+                      onChange={e => handleTemplateSelect(e.target.value)}
+                      disabled={templatesLoading || loading}
+                    >
+                      <option value="">Template: None</option>
+                      {templates.map(t => (
+                        <option key={t.id} value={t.id}>{t.name}</option>
+                      ))}
+                    </select>
+                    {templatesLoading && <span className="text-xs text-gray-400 ml-2">Loading templates...</span>}
+                    {templatesError && <span className="text-xs text-red-500 ml-2">{templatesError}</span>}
+                  </div>
+                  {/* Show preview if draftMessage is HTML and not editing visually */}
+                  {!showVisualEditor && isHtml(draftMessage) && isGraphicMessage && (
+                    <div className="border rounded bg-gray-50 overflow-hidden min-h-[60px] max-h-[200px] w-full mb-1 mt-2">
+                      <div className="w-full h-full" style={{ pointerEvents: 'none' }} dangerouslySetInnerHTML={{ __html: draftMessage }} />
+                    </div>
+                  )}
+                </div>
+                {/* Visual Editor Modal */}
+                {showVisualEditor && (
+                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+                    <div className="bg-white rounded-lg shadow-lg p-4 max-w-3xl w-full relative">
+                      <div className="flex justify-between items-center mb-2">
+                        <div className="font-semibold text-lg">Visual Email Editor</div>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="outline" onClick={handleSwitchToPlain}>Switch to Plain Text</Button>
+                          <Button size="sm" variant="outline" onClick={() => setShowVisualEditor(false)}>Close</Button>
+                        </div>
+                      </div>
+                      <GrapesJSEditor
+                        initialHtml={visualHtml || draftMessage}
+                        onSave={handleVisualSave}
+                        disabled={loading}
+                      />
+                    </div>
+                  </div>
+                )}
+                {/* Message textarea (hide if visual editor or graphic message is active) */}
+                {!isGraphicMessage && !showVisualEditor && (
+                  <div>
                     <div className='text-md font-medium pb-2'>Message</div>
                     <TextareaAutosize disabled={loading} required value={draftMessage} onChange={(e) => setDraftMessage(e.target.value)} placeholder="Enter message" className='w-full h-40 border border-input border-rounded-lg hover:border-blue-600 focus:ring-blue-600 p-2'/>
-                </div>
+                  </div>
+                )}
                 {showSchedule && (
                   <div>
                     <div className='text-md font-medium pb-2'>Schedule Date & Time</div>
