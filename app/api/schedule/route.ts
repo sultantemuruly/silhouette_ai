@@ -65,6 +65,7 @@ export async function POST(request: NextRequest) {
 export async function PATCH(request: NextRequest) {
     try {
         const body = await request.json();
+        console.log('PATCH /api/schedule body:', body);
         const { id, user_id, subject, recipient, content, scheduled_date, timezone } = body;
         if (!id || !user_id) {
             return NextResponse.json({ error: "ID and User ID are required" }, { status: 400 });
@@ -95,13 +96,21 @@ export async function PATCH(request: NextRequest) {
         }
         let scheduledDateUtc: Date;
         if (effectiveZone) {
-            scheduledDateUtc = DateTime.fromFormat(scheduled_date, "yyyy-MM-dd'T'HH:mm:ss", { zone: effectiveZone }).toUTC().toJSDate();
+            // Try ISO first, then fallback to fromFormat
+            let dt = DateTime.fromISO(scheduled_date, { zone: effectiveZone });
+            if (!dt.isValid) {
+                dt = DateTime.fromFormat(scheduled_date, "yyyy-MM-dd'T'HH:mm:ss", { zone: effectiveZone });
+            }
+            if (!dt.isValid) throw new Error('Invalid scheduled_date format');
+            scheduledDateUtc = dt.toUTC().toJSDate();
         } else {
             scheduledDateUtc = new Date(scheduled_date);
         }
         await db.update(scheduled_emails)
             .set({ subject, recipient, content, scheduled_date: scheduledDateUtc, timezone })
             .where(eq(scheduled_emails.id, id));
+        const [updated] = await db.select().from(scheduled_emails).where(eq(scheduled_emails.id, id));
+        console.log('Updated scheduled email:', updated);
         return NextResponse.json({ success: true });
     } catch (error) {
         console.error('Error in PATCH /api/schedule:', error);

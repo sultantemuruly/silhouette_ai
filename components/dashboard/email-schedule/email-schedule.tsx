@@ -88,15 +88,17 @@ const EmailSchedule = () => {
       return;
     }
     setModalError(null);
+    const patchBody = {
+      id: selectedEmail.id,
+      user_id: user?.id,
+      ...editFields,
+      timezone,
+    };
+    console.log('PATCH /api/schedule request body:', patchBody);
     await fetch('/api/schedule', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        id: selectedEmail.id,
-        user_id: user?.id,
-        ...editFields,
-        timezone,
-      }),
+      body: JSON.stringify(patchBody),
     });
     setModalOpen(false);
     setEditMode(false);
