@@ -28,13 +28,11 @@ export function HeroSection() {
                 Silhouette AI
               </h1>
               <p className="mt-2 text-2xl text-muted-foreground">
-                Your invisible edge in email productivity
+                Effortless AI Email Writing & Beautiful Templates
               </p>
             </div>
             <p className="text-lg text-muted-foreground">
-              Smart. Subtle. AI-powered email flow that helps you manage time,
-              tone, and priority. Elevate your communication without the
-              complexity.
+              Instantly craft professional emails and stunning templates with AI. Write, schedule, and send with confidence—no more writer’s block or formatting headaches.
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
               <SignedOut>
@@ -83,43 +81,44 @@ export function HeroSection() {
                   <div className="h-3 w-3 rounded-full bg-green-500" />
                 </div>
                 <div className="ml-4 text-sm font-medium">
-                  Silhouette AI - Smart Email Assistant
+                  Silhouette AI - Email Writing & Templates
                 </div>
               </div>
               <div className="pt-12 p-6">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between border-b pb-2">
-                    <div className="font-medium">Inbox</div>
-                    <div className="text-sm text-muted-foreground">Today</div>
+                    <div className="font-medium">Compose</div>
+                    <div className="text-sm text-muted-foreground">AI Powered</div>
                   </div>
                   <div className="space-y-3">
-                    {/* AI Search & Summary Example */}
+                    {/* AI Email Writing Example */}
                     <div className="flex items-start gap-3 p-3 rounded-md border bg-card">
                       <div className="h-8 w-8 rounded-full bg-blue-600/10 flex items-center justify-center text-blue-600">
                         <Sparkles className="h-4 w-4" />
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center justify-between">
-                          <div className="font-medium text-black">Search: &quot;project update&quot;</div>
-                          <div className="text-xs text-slate-900">AI Summary</div>
+                          <div className="font-medium text-black">AI Email Writing</div>
+                          <div className="text-xs text-slate-900">Instant Draft</div>
                         </div>
                         <div className="text-sm text-black">
-                          3 emails found. Key points: Project deadline, client feedback, next steps.
+                          &quot;Hi team, just a quick update on our project...&quot;<br />
+                          <span className="text-blue-600">AI continues your message with clarity and professionalism.</span>
                         </div>
                       </div>
                     </div>
-                    {/* Important Email Example */}
+                    {/* Template Generation Example */}
                     <div className="flex items-start gap-3 p-3 rounded-md border bg-card">
                       <div className="h-8 w-8 rounded-full bg-blue-600/10 flex items-center justify-center text-blue-600">
                         <Mail className="h-4 w-4" />
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center justify-between">
-                          <div className="font-medium text-black">Important: Client Feedback</div>
-                          <div className="text-xs text-slate-900">10:30 AM</div>
+                          <div className="font-medium text-black">Template Generation</div>
+                          <div className="text-xs text-slate-900">1-Click Design</div>
                         </div>
                         <div className="text-sm text-black">
-                          AI marked this as important: &quot;Client feedback requires urgent response.&quot;
+                          Choose a template or let AI design one for you—perfect for every occasion.
                         </div>
                       </div>
                     </div>

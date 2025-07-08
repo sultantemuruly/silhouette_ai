@@ -6,28 +6,28 @@ export function HowItWorks() {
       number: "01",
       title: "Connect your email",
       description:
-        "Securely connect your existing email accounts to Silhouette with just a few clicks.",
+        "Securely connect your existing email account to Silhouette in seconds.",
     },
     {
       number: "02",
-      title: "Customize your preferences",
+      title: "Write or generate with AI",
       description:
-        "Set your communication style, notification preferences, and priority rules.",
+        "Let AI draft, rewrite, or polish your emails. Or generate stunning templates for any occasion.",
     },
     {
       number: "03",
-      title: "Let AI do the work",
+      title: "Schedule or send instantly",
       description:
-        "Our AI begins analyzing your emails, organizing your inbox, and optimizing your workflow.",
+        "Send right away or schedule for later. Stay organized and professional with ease.",
     },
   ];
 
   const benefits = [
-    "Save 5+ hours per week on email management",
-    "Never miss important emails again",
-    "Improve response quality and consistency",
-    "Reduce email anxiety and inbox overload",
-    "Maintain professional communication effortlessly",
+    "Write emails 5x faster with AI assistance",
+    "Always sound professional and on-brand",
+    "Create beautiful, reusable templates in seconds",
+    "Never miss a follow-up with easy scheduling",
+    "Reduce stress and save time every day",
   ];
 
   return (

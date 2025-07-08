@@ -1,4 +1,4 @@
-import { Mail, Search, Star } from "lucide-react";
+import { Mail, Search, Star, Sparkles, Calendar, LayoutTemplate } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -10,22 +10,40 @@ import {
 export function FeaturesSection() {
   const features = [
     {
-      icon: <Mail className="h-6 w-6" />,
-      title: "All Email",
+      icon: <Sparkles className="h-6 w-6" />,
+      title: "Wise Write",
       description:
-        "View all your emails in one place with a clean, organized layout. Easily manage and browse your entire inbox.",
+        "Let AI draft, rewrite, or polish your emails instantly. Say goodbye to writer’s block and hello to professional communication.",
     },
     {
-      icon: <Search className="h-6 w-6" />,
+      icon: <Calendar className="h-6 w-6" />,
+      title: "Easy Schedule",
+      description:
+        "Schedule emails to send later or set up follow-ups with just a click. Stay on top of your communication, effortlessly.",
+    },
+    {
+      icon: <LayoutTemplate className="h-6 w-6" />,
+      title: "Fancy Template",
+      description:
+        "Create or generate beautiful email templates for any occasion. Personalize and reuse with ease.",
+    },
+  ];
+
+  const comingSoon = [
+    {
+      icon: <Mail className="h-6 w-6 opacity-50" />,
+      title: "All Mail",
+      description: "Unified inbox for all your emails. (Coming Soon)",
+    },
+    {
+      icon: <Search className="h-6 w-6 opacity-50" />,
       title: "Smart Search",
-      description:
-        "Ask questions and let the AI search and summarize email threads, saving you time and giving you quick insights.",
+      description: "AI-powered search and summaries. (Coming Soon)",
     },
     {
-      icon: <Star className="h-6 w-6" />,
-      title: "Important Section",
-      description:
-        "Automatically highlights important messages so you can focus on what matters most, without the clutter.",
+      icon: <Star className="h-6 w-6 opacity-50" />,
+      title: "Important",
+      description: "Automatic important email detection. (Coming Soon)",
     },
   ];
 
@@ -37,11 +55,10 @@ export function FeaturesSection() {
             Core Features
           </div>
           <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
-            Everything you need for email mastery
+            AI Email Writing & Templates, Simplified
           </h2>
           <p className="max-w-[700px] text-muted-foreground md:text-xl/relaxed">
-            Silhouette combines powerful AI with intuitive design to transform
-            how you handle email
+            Silhouette helps you write, schedule, and design emails with the power of AI. More features coming soon!
           </p>
         </div>
         <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 mt-12">
@@ -49,6 +66,21 @@ export function FeaturesSection() {
             <Card key={i} className="bg-background">
               <CardHeader>
                 <div className="p-2 w-fit rounded-md bg-blue-500/10 text-blue-700 mb-3">
+                  {feature.icon}
+                </div>
+                <CardTitle>{feature.title}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-base">
+                  {feature.description}
+                </CardDescription>
+              </CardContent>
+            </Card>
+          ))}
+          {comingSoon.map((feature, i) => (
+            <Card key={features.length + i} className="bg-muted/30 opacity-60">
+              <CardHeader>
+                <div className="p-2 w-fit rounded-md bg-blue-200/30 text-blue-400 mb-3">
                   {feature.icon}
                 </div>
                 <CardTitle>{feature.title}</CardTitle>
