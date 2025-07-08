@@ -32,7 +32,7 @@ export function HowItWorks() {
 
   return (
     <section id="how-it-works" className="py-20">
-      <div className="container px-4 md:px-6">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
         <div className="grid gap-12 md:grid-cols-2 md:gap-16 items-center">
           <div>
             <div className="inline-block rounded-lg bg-blue-600/10 text-blue-700 px-3 py-1 text-sm mb-4">

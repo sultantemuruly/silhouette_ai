@@ -49,7 +49,7 @@ export function FeaturesSection() {
 
   return (
     <section id="features" className="py-20 bg-blue-100/10">
-      <div className="container px-4 md:px-6">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
         <div className="flex flex-col items-center justify-center space-y-4 text-center">
           <div className="inline-block rounded-lg px-3 py-1 text-sm bg-blue-600/10 text-blue-700">
             Core Features

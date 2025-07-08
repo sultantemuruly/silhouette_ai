@@ -20,7 +20,7 @@ export function HeroSection() {
 
   return (
     <section className="relative overflow-hidden py-20 md:py-32">
-      <div className="container px-4 md:px-6">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
         <div className="grid gap-12 md:grid-cols-2 md:gap-16 items-center">
           <div className="flex flex-col gap-6">
             <div>
