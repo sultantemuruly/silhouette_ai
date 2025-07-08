@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import GrapesJSEditor from './grapesjs-editor';
+import dynamic from 'next/dynamic';
+
+const GrapesJSEditor = dynamic(() => import('./grapesjs-editor'), { ssr: false });
 
 const TemplateGenerate = () => {
   const [prompt, setPrompt] = useState('');
@@ -62,6 +64,15 @@ const TemplateGenerate = () => {
     }
   };
 
+  const handleBackToPrompt = () => {
+    setHtml('');
+    setEditedHtml('');
+    setError('');
+    setSaveSuccess(false);
+    setSaveError('');
+    setName('');
+  };
+
   return (
     <div className="flex flex-col gap-4">
       {!html && (
@@ -101,13 +112,22 @@ const TemplateGenerate = () => {
             disabled={saveLoading}
             maxLength={128}
           />
-          <button
-            className="bg-green-600 text-white px-4 py-2 rounded disabled:opacity-50"
-            onClick={handleSave}
-            disabled={saveLoading || !name.trim() || !(editedHtml || html)}
-          >
-            {saveLoading ? 'Saving...' : 'Save Template'}
-          </button>
+          <div className="flex gap-2">
+            <button
+              className="bg-green-600 text-white px-4 py-2 rounded disabled:opacity-50"
+              onClick={handleSave}
+              disabled={saveLoading || !name.trim() || !(editedHtml || html)}
+            >
+              {saveLoading ? 'Saving...' : 'Save Template'}
+            </button>
+            <button
+              className="bg-gray-300 text-gray-800 px-4 py-2 rounded disabled:opacity-50"
+              onClick={handleBackToPrompt}
+              disabled={saveLoading}
+            >
+              Back to Prompt
+            </button>
+          </div>
           {saveError && <div className="text-red-600">{saveError}</div>}
           {saveSuccess && <div className="text-green-600">Template saved!</div>}
         </>

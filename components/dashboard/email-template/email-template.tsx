@@ -1,8 +1,10 @@
 import { Button } from '@/components/ui/button'
 import React, { useState, useEffect } from 'react'
+import dynamic from 'next/dynamic';
 import TemplateGenerate from './template-generate'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
-import GrapesJSEditor from './grapesjs-editor';
+
+const GrapesJSEditor = dynamic(() => import('./grapesjs-editor'), { ssr: false });
 
 interface EmailTemplateType {
   id: number;
