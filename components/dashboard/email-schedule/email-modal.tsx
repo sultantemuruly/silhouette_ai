@@ -101,7 +101,7 @@ const EmailModal: React.FC<EmailModalProps> = ({
               <DialogTitle>Email Details</DialogTitle>
               <DialogDescription>View or edit the scheduled email details below.</DialogDescription>
             </DialogHeader>
-            <div className="space-y-4">
+            <div className="space-y-4 max-h-[80vh] overflow-y-auto p-1">
               <div>
                 <label className="block text-sm font-medium mb-1">Title</label>
                 <input

@@ -36,7 +36,7 @@ export function Navbar() {
             Silhouette AI
           </span>
 
-          <nav className="hidden md:flex gap-6">
+          {/* <nav className="hidden md:flex gap-6">
             <a
               href="#features"
               className="text-sm font-medium hover:text-foreground transition-colors"
@@ -55,7 +55,7 @@ export function Navbar() {
             >
               Pricing
             </a>
-          </nav>
+          </nav> */}
         </div>
 
         {/* Actions */}
