@@ -616,20 +616,35 @@ const MessageDraft: React.FC<MessageDraftProps> = ({ user_id, sender }) => {
             )}
           </div>
           <div className="flex gap-2">
-            <input
-              type="text"
-              className="flex-1 border border-input rounded-lg p-2 focus:ring-blue-600 text-sm sm:text-base"
+            <TextareaAutosize
+              minRows={1}
+              maxRows={6}
+              className="flex-1 border border-input rounded-lg p-2 focus:ring-blue-600 text-sm sm:text-base resize-none"
               placeholder="Ask AI to improve, summarize, etc."
               value={input}
               onChange={e => setInput(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter' && !loading) handleSend(); }}
+              onKeyDown={e => {
+                if (e.key === 'Enter' && !e.shiftKey && !loading) {
+                  e.preventDefault();
+                  if (input.trim()) {
+                    handleSend();
+                    setInput(''); // Clear input immediately
+                  }
+                }
+              }}
               disabled={loading}
             />
             <button
               className="bg-blue-600 text-white px-2 sm:px-3 py-2 rounded-lg hover:bg-blue-700 text-sm sm:text-base flex items-center justify-center"
-              onClick={handleSend}
+              onClick={() => {
+                if (input.trim()) {
+                  handleSend();
+                  setInput(''); // Clear input immediately
+                }
+              }}
               disabled={loading || !input.trim()}
               title="Send to AI"
+              type="button"
             >
               {loading ? <span className="animate-pulse">...</span> : <Send className="w-5 h-5" />}
             </button>
