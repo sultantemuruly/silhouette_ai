@@ -92,10 +92,17 @@ export const EmailWriteModal: React.FC<EmailWriteModalProps> = ({ refreshSchedul
         date: now.toISOString().slice(0, 10),
       };
     }
+    function isToday(selectedDay: string) {
+      if (!selectedDay) return false;
+      const selected = new Date(selectedDay);
+      if (isNaN(selected.getTime())) return false;
+      const now = new Date();
+      return now.toISOString().slice(0, 10) === selected.toISOString().slice(0, 10);
+    }
     function getAvailableHours(selectedDate: string) {
-      const { hour, date } = getNowParts();
-      if (selectedDate === date) {
-        // For today, include current hour if there is a valid minute
+      const { hour } = getNowParts();
+      if (isToday(selectedDate)) {
+        // For today, only allow current/future hours
         const validMinutes = getAvailableMinutes(selectedDate, hour.toString());
         const hours = [];
         if (validMinutes.length > 0) hours.push(hour);
@@ -106,13 +113,14 @@ export const EmailWriteModal: React.FC<EmailWriteModalProps> = ({ refreshSchedul
       return Array.from({ length: 24 }, (_, i) => i);
     }
     function getAvailableMinutes(selectedDate: string, selectedHour: string) {
-      const { hour, minute, date } = getNowParts();
+      const { hour, minute } = getNowParts();
       const mins: string[] = [];
-      for (let m = 0; m < 60; m += 5) {
-        if (selectedDate === date && parseInt(selectedHour) === hour) {
-          // Only allow minutes at least 5 min in the future
+      if (isToday(selectedDate) && parseInt(selectedHour) === hour) {
+        for (let m = 0; m < 60; m += 5) {
           if (m > minute + 4) mins.push(m.toString().padStart(2, '0'));
-        } else {
+        }
+      } else {
+        for (let m = 0; m < 60; m += 5) {
           mins.push(m.toString().padStart(2, '0'));
         }
       }
@@ -125,20 +133,23 @@ export const EmailWriteModal: React.FC<EmailWriteModalProps> = ({ refreshSchedul
 
     // Sync local picker state with store date
     React.useEffect(() => {
+      // Only sync from store if all picker fields are empty (initial mount or reset)
       if (!date) {
         if (scheduledDay !== "") setScheduledDay("");
         if (scheduledHour !== "") setScheduledHour("");
         if (scheduledMinute !== "00") setScheduledMinute("00");
         return;
       }
-      const d = new Date(date);
-      if (!isNaN(d.getTime())) {
-        const newDay = d.toISOString().slice(0, 10);
-        const newHour = d.getHours().toString().padStart(2, '0');
-        const newMinute = d.getMinutes().toString().padStart(2, '0');
-        if (scheduledDay !== newDay) setScheduledDay(newDay);
-        if (scheduledHour !== newHour) setScheduledHour(newHour);
-        if (scheduledMinute !== newMinute) setScheduledMinute(newMinute);
+      if (!scheduledDay && !scheduledHour && scheduledMinute === "00") {
+        const d = new Date(date);
+        if (!isNaN(d.getTime())) {
+          const newDay = d.toISOString().slice(0, 10);
+          const newHour = d.getHours().toString().padStart(2, '0');
+          const newMinute = d.getMinutes().toString().padStart(2, '0');
+          setScheduledDay(newDay);
+          setScheduledHour(newHour);
+          setScheduledMinute(newMinute);
+        }
       }
     }, [date]);
 
@@ -338,7 +349,6 @@ export const EmailWriteModal: React.FC<EmailWriteModalProps> = ({ refreshSchedul
                     <div className='text-md font-medium pb-2'>Recipient</div>
                     <Input type="email" required disabled={loading} value={recipient} onChange={(e) => setRecipient(e.target.value)} placeholder="Enter recipient email" className='hover:border-blue-600 active:border-blue-600 focus:ring-blue-600'/>
                 </div>
-                <div>{date}</div>
                 <div>
                     <div className='text-md font-medium pb-2'>Subject</div>
                     <Input disabled={loading} required value={draftSubject} onChange={(e) => setDraftSubject(e.target.value)} type="text" placeholder="Enter subject" className='hover:border-blue-600 focus:ring-blue-600'/>
@@ -412,20 +422,21 @@ export const EmailWriteModal: React.FC<EmailWriteModalProps> = ({ refreshSchedul
                         onChange={e => {
                           const newDay = e.target.value;
                           setScheduledDay(newDay);
-                          // Reset hour/minute if not valid for new date
                           const hours = getAvailableHours(newDay);
                           let newHour = scheduledHour;
-                          if (!hours.includes(Number(scheduledHour))) {
+                          // Only auto-correct hour if today and not available
+                          if (isToday(newDay) && !hours.includes(Number(scheduledHour))) {
                             newHour = hours[0]?.toString().padStart(2, '0') ?? '';
                             setScheduledHour(newHour);
                           }
                           const mins = getAvailableMinutes(newDay, newHour);
                           let newMinute = scheduledMinute;
-                          if (!mins.includes(scheduledMinute)) {
+                          // Only auto-correct minute if today and not available
+                          if (isToday(newDay) && !mins.includes(scheduledMinute)) {
                             newMinute = mins[0] ?? '';
                             setScheduledMinute(newMinute);
                           }
-                          // Update store
+                          // For future dates, do not auto-correct hour/minute
                           if (newDay && newHour && newMinute) {
                             const iso = newDay + 'T' + newHour.padStart(2, '0') + ':' + newMinute.padStart(2, '0') + ':00';
                             if (iso !== date) setDate(iso);
@@ -439,14 +450,14 @@ export const EmailWriteModal: React.FC<EmailWriteModalProps> = ({ refreshSchedul
                         onChange={e => {
                           const newHour = e.target.value;
                           setScheduledHour(newHour);
-                          // Reset minute if not valid for new hour
                           const mins = getAvailableMinutes(scheduledDay, newHour);
                           let newMinute = scheduledMinute;
-                          if (!mins.includes(scheduledMinute)) {
+                          // Only auto-correct minute if today and not available
+                          if (isToday(scheduledDay) && !mins.includes(scheduledMinute)) {
                             newMinute = mins[0] ?? '';
                             setScheduledMinute(newMinute);
                           }
-                          // Update store
+                          // For future dates, do not auto-correct minute
                           if (scheduledDay && newHour && newMinute) {
                             const iso = scheduledDay + 'T' + newHour.padStart(2, '0') + ':' + newMinute.padStart(2, '0') + ':00';
                             if (iso !== date) setDate(iso);
@@ -465,7 +476,6 @@ export const EmailWriteModal: React.FC<EmailWriteModalProps> = ({ refreshSchedul
                         onChange={e => {
                           const newMinute = e.target.value;
                           setScheduledMinute(newMinute);
-                          // Update store
                           if (scheduledDay && scheduledHour && newMinute) {
                             const iso = scheduledDay + 'T' + scheduledHour.padStart(2, '0') + ':' + newMinute.padStart(2, '0') + ':00';
                             if (iso !== date) setDate(iso);
