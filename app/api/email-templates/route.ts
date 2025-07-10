@@ -58,13 +58,14 @@ export async function PATCH(req: NextRequest) {
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const { id, name, html } = await req.json();
-  if (!id || (!name && !html)) {
+  const { id, name, html, is_public } = await req.json();
+  if (!id || (!name && !html && typeof is_public === 'undefined')) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
   const updateData: Record<string, unknown> = {};
   if (name) updateData.name = name;
   if (html) updateData.html = html;
+  if (typeof is_public !== 'undefined') updateData.is_public = is_public;
   const result = await db.update(email_templates)
     .set(updateData)
     .where(and(eq(email_templates.id, id), eq(email_templates.user_id, userId)))

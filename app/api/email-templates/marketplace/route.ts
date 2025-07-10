@@ -14,6 +14,7 @@ export async function GET() {
       last_name: users.last_name,
     })
     .from(email_templates)
+    .where(eq(email_templates.is_public, true))
     .innerJoin(users, eq(email_templates.user_id, users.clerk_id));
   return NextResponse.json(templates);
 } 

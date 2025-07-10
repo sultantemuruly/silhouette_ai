@@ -5,6 +5,7 @@ import {
   timestamp,
   text,
   bigint,
+  boolean,
 } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
@@ -43,4 +44,5 @@ export const email_templates = pgTable("email_templates", {
   prompt: text().notNull(),
   html: text().notNull(), 
   created_at: timestamp("created_at").defaultNow().notNull(),
+  is_public: boolean("is_public").notNull().default(false),
 });

@@ -12,6 +12,7 @@ interface EmailTemplateType {
   html: string;
   prompt: string;
   created_at: string;
+  is_public?: boolean;
 }
 
 // Add a type for the global property
@@ -108,7 +109,29 @@ const EmailTemplate = () => {
                       <div className='font-semibold'>{t.name}</div>
                       <div className='text-xs text-gray-400'>Created: {new Date(t.created_at).toLocaleString()}</div>
                     </div>
-                    <Button size='sm' variant='outline' onClick={() => setPreviewTemplate(t)} className='ml-2'>Open</Button>
+                    <div className='flex flex-col gap-2 items-end'>
+                      <Button size='sm' variant='outline' onClick={() => setPreviewTemplate(t)} className='ml-2'>Open</Button>
+                      <Button
+                        size='sm'
+                        variant={t.is_public ? 'secondary' : 'regular'}
+                        onClick={async () => {
+                          const newVal = !t.is_public;
+                          const res = await fetch('/api/email-templates', {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ id: t.id, is_public: newVal }),
+                          });
+                          const data = await res.json();
+                          if (res.ok && data.template) {
+                            setTemplates(templates => templates.map(temp => temp.id === t.id ? { ...temp, is_public: newVal } : temp));
+                          } else {
+                            alert(data.error || 'Failed to update template visibility.');
+                          }
+                        }}
+                      >
+                        {t.is_public ? 'Remove from Marketplace' : 'Send to Marketplace'}
+                      </Button>
+                    </div>
                   </div>
                   <div className='border rounded bg-gray-50 w-full flex-1'>
                     <iframe
