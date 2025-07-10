@@ -54,11 +54,11 @@ const MessageDraft: React.FC<MessageDraftProps> = ({ user_id, sender }) => {
         return;
       }
       if (!scheduledDay && !scheduledHour && scheduledMinute === "00") {
-        const d = new Date(date);
-        if (!isNaN(d.getTime())) {
-          const newDay = d.toISOString().slice(0, 10);
-          const newHour = d.getHours().toString().padStart(2, '0');
-          const newMinute = d.getMinutes().toString().padStart(2, '0');
+      const d = new Date(date);
+      if (!isNaN(d.getTime())) {
+        const newDay = d.toISOString().slice(0, 10);
+        const newHour = d.getHours().toString().padStart(2, '0');
+        const newMinute = d.getMinutes().toString().padStart(2, '0');
           setScheduledDay(newDay);
           setScheduledHour(newHour);
           setScheduledMinute(newMinute);
@@ -96,10 +96,10 @@ const MessageDraft: React.FC<MessageDraftProps> = ({ user_id, sender }) => {
       const { hour, minute, date } = getNowParts();
       const mins: string[] = [];
       if (selectedDate === date && parseInt(selectedHour) === hour) {
-        for (let m = 0; m < 60; m += 5) {
+      for (let m = 0; m < 60; m += 5) {
           if (m > minute + 4) mins.push(m.toString().padStart(2, '0'));
         }
-      } else {
+        } else {
         for (let m = 0; m < 60; m += 5) {
           mins.push(m.toString().padStart(2, '0'));
         }

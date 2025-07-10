@@ -10,6 +10,7 @@ import ComingSoon from "@/components/dashboard/coming-soon";
 import EmailWrite from "@/components/dashboard/email-write/email-write";
 import EmailSchedule from "@/components/dashboard/email-schedule/email-schedule";
 import EmailTemplate from "@/components/dashboard/email-template/email-template";
+import TemplateMarketplace from "@/components/dashboard/template-marketplace/template-marketplace";
 
 import { useCategoryStore } from "@/stores/useCategoryStore";
 import { Category } from "@/types";
@@ -23,6 +24,7 @@ const categoryComponents: Record<Category, React.ReactNode> = {
   "fancy-template": <EmailTemplate />,
   "all-mail": <ComingSoon />,
   "smart-search": <ComingSoon />,
+  "template-marketplace": <TemplateMarketplace />,
   important: <ComingSoon />,
   // add more in future
 };

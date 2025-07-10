@@ -75,6 +75,12 @@ export const navItemsActive: NavItem[] = [
     href: "/mail/template",
     category: "fancy-template",
     icon: <span className="ml-auto text-xs font-medium text-yellow-600">🖼️</span>,
+  },
+  {
+    label: "Template Marketplace",
+    href: "/mail/marketplace",
+    category: "template-marketplace",
+    icon: <span className="ml-auto text-xs font-medium text-yellow-600">🛍️</span>,
   }
 ];
 

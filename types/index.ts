@@ -88,7 +88,7 @@ export type GmailCategory = {
   description?: string;
 };
 
-export type Category = "wise-write"| "easy-schedule" | "fancy-template"| "all-mail" | "smart-search" | "important";
+export type Category = "wise-write"| "easy-schedule" | "fancy-template" | "template-marketplace" | "all-mail" | "smart-search" | "important";
 
 export interface CategoryState {
   selectedCategory: Category;
