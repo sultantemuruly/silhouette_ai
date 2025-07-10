@@ -298,6 +298,9 @@ const MessageDraft: React.FC<MessageDraftProps> = ({ user_id, sender }) => {
               recipient,
               subject: draftSubject,
               content: messageContent,
+              user_id,
+              sender,
+              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
             })
           });
           if (res.ok) {

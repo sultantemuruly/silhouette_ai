@@ -193,7 +193,9 @@ export const EmailWriteModal: React.FC<EmailWriteModalProps> = ({ refreshSchedul
                 recipient,
                 subject: draftSubject,
                 content: draftMessage,
-                sender
+                sender,
+                user_id,
+                timezone
             })
         })
         if (response.ok) {
