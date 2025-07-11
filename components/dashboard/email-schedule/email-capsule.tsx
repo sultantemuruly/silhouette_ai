@@ -1,4 +1,5 @@
 import React from 'react'
+import ReactShadow from 'react-shadow';
 
 interface EmailCapsuleProps {
   date: string;
@@ -34,7 +35,9 @@ const EmailCapsule: React.FC<EmailCapsuleProps> = ({ date, title, recipient, con
       <div className="font-semibold text-base mb-1 truncate" title={title}>{title}</div>
       <div className="text-sm text-gray-600 mb-2 truncate" title={recipient}>To: {recipient}</div>
       <div className="text-sm text-gray-700 flex-1 overflow-hidden">
-        <div className="email-message-html" dangerouslySetInnerHTML={{ __html: content }} />
+        <ReactShadow.div>
+          <div className="email-message-html" style={{ maxHeight: 120, overflowY: 'auto' }} dangerouslySetInnerHTML={{ __html: content }} />
+        </ReactShadow.div>
       </div>
     </div>
   )

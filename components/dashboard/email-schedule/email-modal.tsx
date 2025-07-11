@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import dynamic from 'next/dynamic';
+import ReactShadow from 'react-shadow';
 
 interface EmailModalProps {
   open: boolean;
@@ -103,23 +104,23 @@ const EmailModal: React.FC<EmailModalProps> = ({
             </DialogHeader>
             <div className="space-y-4 max-h-[80vh] overflow-y-auto p-1">
               <div>
-                <label className="block text-sm font-medium mb-1">Title</label>
-                <input
-                  type="text"
-                  name="subject"
-                  className="w-full border rounded px-3 py-2 text-sm"
-                  value={editFields.subject}
-                  onChange={onEditChange}
-                  readOnly={!isPending || !editMode}
-                />
-              </div>
-              <div>
                 <label className="block text-sm font-medium mb-1">Recipient</label>
                 <input
                   type="text"
                   name="recipient"
                   className="w-full border rounded px-3 py-2 text-sm"
                   value={editFields.recipient}
+                  onChange={onEditChange}
+                  readOnly={!isPending || !editMode}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Subject</label>
+                <input
+                  type="text"
+                  name="subject"
+                  className="w-full border rounded px-3 py-2 text-sm"
+                  value={editFields.subject}
                   onChange={onEditChange}
                   readOnly={!isPending || !editMode}
                 />
@@ -226,24 +227,35 @@ const EmailModal: React.FC<EmailModalProps> = ({
               {error && (
                 <div className="text-red-500 text-xs mb-2">{error}</div>
               )}
-              <div>
-                <label className="block text-sm font-medium mb-1">Content</label>
-                <div className="email-message-html" dangerouslySetInnerHTML={{ __html: editFields.content }} />
-                {/* Show Edit Message button only in edit mode, next to the message */}
-                {isPending && editMode && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="ml-2 mt-2"
-                    onClick={() => {
-                      const content = editFields.content;
-                      setVisualHtml(isHtml(content) ? content : `<div>${content.replace(/\n/g, '<br/>')}</div>`);
-                      setShowVisualEditor(true);
-                    }}
-                  >
-                    Edit Message
-                  </Button>
-                )}
+              <div style={{ position: 'relative' }}>
+                <label className="block text-sm font-medium mb-1">Message</label>
+                <div style={{ position: 'relative' }}>
+                  <ReactShadow.div>
+                    <div className="email-message-html" style={{ maxHeight: 300, overflowY: 'auto' }} dangerouslySetInnerHTML={{ __html: editFields.content }} />
+                  </ReactShadow.div>
+                  {/* Overlay only the message preview for click-to-edit */}
+                  {isPending && (
+                    <div
+                      style={{ position: 'absolute', inset: 0, zIndex: 2, cursor: 'pointer', background: 'transparent' }}
+                      onClick={() => {
+                        // if (!editMode) {
+                        //   onEditMode(true);
+                        // } else {
+                        //   const content = editFields.content;
+                        //   setVisualHtml(isHtml(content) ? content : `<div>${content.replace(/\n/g, '<br/>')}`);
+                        //   setShowVisualEditor(true);
+                        // }
+                        if (editMode) {
+                          const content = editFields.content;
+                          setVisualHtml(isHtml(content) ? content : `<div>${content.replace(/\n/g, '<br/>')}`);
+                          setShowVisualEditor(true);
+                        }
+                      }}
+                      aria-label={editMode ? 'Edit Message' : 'Enable Edit Mode'}
+                      tabIndex={0}
+                    />
+                  )}
+                </div>
               </div>
             </div>
             <div className="flex justify-between items-center gap-2 mt-4">
