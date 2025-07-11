@@ -30,6 +30,9 @@ const EmailTemplate = () => {
   const [editLoading, setEditLoading] = useState(false);
   const [previewTemplate, setPreviewTemplate] = useState<EmailTemplateType | null>(null);
 
+  // Debug: log the current previewTemplate whenever it changes
+  console.log('Current previewTemplate:', previewTemplate);
+
   useEffect(() => {
     const fetchTemplates = async () => {
       setLoading(true)
@@ -84,6 +87,8 @@ const EmailTemplate = () => {
 
   return (
     <div className='flex flex-col items-center min-h-screen w-full bg-gray-50'>
+      {/* Persistent module title */}
+      <div className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2 mt-4 w-full max-w-2xl px-2">Fancy Template</div>
       {/* Header Row */}
       <div className='w-full max-w-2xl flex items-center justify-between mt-12 mb-8 px-2'>
         <h1 className='text-3xl font-bold text-gray-900'>Email Templates</h1>
@@ -110,7 +115,7 @@ const EmailTemplate = () => {
                       <div className='text-xs text-gray-400'>Created: {new Date(t.created_at).toLocaleString()}</div>
                     </div>
                     <div className='flex flex-col gap-2 items-end'>
-                      <Button size='sm' variant='outline' onClick={() => setPreviewTemplate(t)} className='ml-2'>Open</Button>
+                      {/* <Button size='sm' variant='outline' onClick={() => setPreviewTemplate(t)} className='ml-2'>Open</Button> */}
                       <Button
                         size='sm'
                         variant={t.is_public ? 'secondary' : 'regular'}
@@ -133,7 +138,15 @@ const EmailTemplate = () => {
                       </Button>
                     </div>
                   </div>
-                  <div className='border rounded bg-gray-50 w-full flex-1'>
+                  <div
+                    className='border rounded bg-gray-50 w-full flex-1 cursor-pointer hover:shadow-lg transition-shadow'
+                    onClick={() => { console.log('Clicked preview', t); setPreviewTemplate(t); }}
+                    title='Click to preview this template'
+                    tabIndex={0}
+                    role='button'
+                    aria-label='Preview Template'
+                    style={{ outline: 'none' }}
+                  >
                     <iframe
                       srcDoc={t.html}
                       style={{ width: '100%', border: 'none', minHeight: 200 }}

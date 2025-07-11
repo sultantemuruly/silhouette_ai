@@ -4,12 +4,12 @@ import React, { useState } from 'react'
 import { useRecipient, useSetRecipient, useDate, useSetDate, useMessageStore, useShowSchedule, useSetShowSchedule } from '@/stores/useMessageStore'
 import TextareaAutosize from 'react-textarea-autosize';
 import dynamic from 'next/dynamic';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 
 import {
     Card,
     CardContent,
     CardDescription,
-    CardFooter,
     CardHeader,
     CardTitle,
   } from "@/components/ui/card"
@@ -61,9 +61,11 @@ export const EmailWriteModal: React.FC<EmailWriteModalProps> = ({ refreshSchedul
     const [templates, setTemplates] = useState<EmailTemplateType[]>([]);
     const [templatesLoading, setTemplatesLoading] = useState(false);
     const [templatesError, setTemplatesError] = useState('');
-    const [selectedTemplate, setSelectedTemplate] = useState<EmailTemplateType | null>(null);
-    const [visualHtml, setVisualHtml] = useState<string>('');
-    const [isGraphicMessage, setIsGraphicMessage] = useState(false);
+    const selectedTemplate = useMessageStore(state => (state as import('@/types').DraftState).selectedTemplate);
+    const setSelectedTemplate = useMessageStore(state => (state as import('@/types').DraftState).setSelectedTemplate);
+    const [visualHtml] = useState<string>('');
+    const isGraphicMessage = useMessageStore(state => (state as import('@/types').DraftState).isGraphicMessage);
+    const setIsGraphicMessage = useMessageStore(state => (state as import('@/types').DraftState).setIsGraphicMessage);
 
     // Fetch templates on mount
     React.useEffect(() => {
@@ -302,6 +304,7 @@ export const EmailWriteModal: React.FC<EmailWriteModalProps> = ({ refreshSchedul
         setSelectedTemplate(t);
         setIsGraphicMessage(true);
         setDraftMessage(t.html); // Set draftMessage to template HTML
+        setShowVisualEditor(true); // Automatically open visual editor
         console.log('[TemplateSelect] Selected template:', t);
         console.log('[TemplateSelect] Setting draftMessage to:', t.html);
       }
@@ -314,19 +317,13 @@ export const EmailWriteModal: React.FC<EmailWriteModalProps> = ({ refreshSchedul
       setIsGraphicMessage(true);
     };
 
-    // When user clicks Compose with Visual Editor
-    const handleOpenVisualEditor = () => {
-      setShowVisualEditor(true);
-      setIsGraphicMessage(true);
-    };
-
     // When user switches back to plain text
-    const handleSwitchToPlain = () => {
-      setShowVisualEditor(false);
-      setIsGraphicMessage(false);
-      setSelectedTemplate(null);
-      setVisualHtml('');
-    };
+    // const handleSwitchToPlain = () => {
+    //   setShowVisualEditor(false);
+    //   setIsGraphicMessage(false);
+    //   setSelectedTemplate(null);
+    //   setVisualHtml('');
+    // };
 
     // Helper to check if draftMessage is HTML
     const isHtml = (str: string) => /<([A-Za-z][A-Za-z0-9]*)\b[^>]*>(.*?)<\/\1>/.test(str);
@@ -349,23 +346,15 @@ export const EmailWriteModal: React.FC<EmailWriteModalProps> = ({ refreshSchedul
             <div className='flex flex-col gap-4'>
                 <div>
                     <div className='text-md font-medium pb-2'>Recipient</div>
-                    <Input type="email" required disabled={loading} value={recipient} onChange={(e) => setRecipient(e.target.value)} placeholder="Enter recipient email" className='hover:border-blue-600 active:border-blue-600 focus:ring-blue-600'/>
+                    <Input type="email" required disabled={loading} value={recipient} onChange={(e) => setRecipient(e.target.value)} placeholder="someone@example.com" className='hover:border-blue-600 active:border-blue-600 focus:ring-blue-600'/>
                 </div>
                 <div>
                     <div className='text-md font-medium pb-2'>Subject</div>
-                    <Input disabled={loading} required value={draftSubject} onChange={(e) => setDraftSubject(e.target.value)} type="text" placeholder="Enter subject" className='hover:border-blue-600 focus:ring-blue-600'/>
+                    <Input disabled={loading} required value={draftSubject} onChange={(e) => setDraftSubject(e.target.value)} type="text" placeholder="What’s this about?" className='hover:border-blue-600 focus:ring-blue-600'/>
                 </div>
                 {/* Template selection and visual editor controls */}
                 <div className="flex flex-col gap-2">
                   <div className="flex gap-2 items-center">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handleOpenVisualEditor}
-                      disabled={!selectedTemplate || !selectedTemplate.id || templatesLoading || loading}
-                    >
-                      Compose with Visual Editor
-                    </Button>
                     <select
                       className="border rounded p-2 text-sm"
                       value={selectedTemplate?.id || ''}
@@ -382,35 +371,48 @@ export const EmailWriteModal: React.FC<EmailWriteModalProps> = ({ refreshSchedul
                   </div>
                   {/* Show preview if draftMessage is HTML and not editing visually */}
                   {!showVisualEditor && isHtml(draftMessage) && isGraphicMessage && (
-                    <div className="border rounded bg-gray-50 overflow-hidden min-h-[60px] max-h-[200px] w-full mb-1 mt-2">
-                      <div className="w-full h-full" style={{ pointerEvents: 'none' }} dangerouslySetInnerHTML={{ __html: draftMessage }} />
+                    <div
+                      className="border rounded bg-gray-50 overflow-y-auto min-h-[60px] max-h-[600px] w-full mb-1 mt-2 cursor-pointer hover:shadow-lg transition-shadow"
+                      title="Click to edit in Visual Editor"
+                      onClick={() => setShowVisualEditor(true)}
+                      tabIndex={0}
+                      role="button"
+                      aria-label="Open Visual Editor"
+                      style={{ outline: 'none' }}
+                    >
+                      <div className="w-full h-full" dangerouslySetInnerHTML={{ __html: draftMessage }} />
                     </div>
                   )}
                 </div>
                 {/* Visual Editor Modal */}
-                {showVisualEditor && (
-                  <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-                    <div className="bg-white rounded-lg shadow-lg p-4 max-w-3xl w-full relative">
-                      <div className="flex justify-between items-center mb-2">
-                        <div className="font-semibold text-lg">Visual Email Editor</div>
-                        <div className="flex gap-2">
-                          <Button size="sm" variant="outline" onClick={handleSwitchToPlain}>Switch to Plain Text</Button>
-                          <Button size="sm" variant="outline" onClick={() => setShowVisualEditor(false)}>Close</Button>
-                        </div>
-                      </div>
-                      <GrapesJSEditor
-                        initialHtml={visualHtml || draftMessage}
-                        onSave={handleVisualSave}
-                        disabled={loading}
-                      />
+                <Dialog open={showVisualEditor} onOpenChange={setShowVisualEditor}>
+                  <DialogContent className="max-w-3xl w-full">
+                    <div className="flex justify-between items-center mb-2">
+                      <DialogTitle>Visual Email Editor</DialogTitle>
+                      {/* <div className="flex gap-2">
+                        <Button size="sm" variant="outline" onClick={handleSwitchToPlain}>Switch to Plain Text</Button>
+                        <Button size="sm" variant="outline" onClick={() => setShowVisualEditor(false)}>Close</Button>
+                      </div> */}
                     </div>
-                  </div>
-                )}
+                    <GrapesJSEditor
+                      initialHtml={visualHtml || draftMessage}
+                      onSave={handleVisualSave}
+                      disabled={loading}
+                    />
+                  </DialogContent>
+                </Dialog>
                 {/* Message textarea (hide if visual editor or graphic message is active) */}
                 {!isGraphicMessage && !showVisualEditor && (
                   <div>
                     <div className='text-md font-medium pb-2'>Message</div>
-                    <TextareaAutosize disabled={loading} required value={draftMessage} onChange={(e) => setDraftMessage(e.target.value)} placeholder="Enter message" className='w-full h-40 border border-input border-rounded-lg hover:border-blue-600 focus:ring-blue-600 p-2'/>
+                    <TextareaAutosize 
+                      disabled={loading} 
+                      required 
+                      value={draftMessage} 
+                      onChange={(e) => setDraftMessage(e.target.value)}
+                      placeholder="What's on your mind?" 
+                      minRows={8}
+                      className='w-full min-h-[200px] border border-input border-rounded-lg hover:border-blue-600 focus:ring-blue-600 p-2 resize-y'/>
                   </div>
                 )}
                 {showSchedule && (
@@ -503,24 +505,23 @@ export const EmailWriteModal: React.FC<EmailWriteModalProps> = ({ refreshSchedul
                 {success && <div className="text-green-600 text-sm pt-1">{success}</div>}
             </div>
         </CardContent>
-        <CardFooter>
-            <div className='flex justify-end gap-2 w-full'>
-                <Button type="button" variant="regular" onClick={handleDraft} disabled={loading}><BrainCircuit className='w-4 h-4' /> AI</Button>
-                <Button type="button" variant="outline" onClick={() => {
-                  setShowSchedule(!showSchedule);
-                  if (showSchedule && onClose) onClose();
-                }} disabled={loading}>
-                  <CalendarClock className='w-4 h-4 mr-1' /> {showSchedule ? 'Undo Schedule' : 'Schedule'}
-                </Button>
-                {showSchedule ? (
-                  <Button type="button" variant="outline" onClick={handleSchedule} disabled={loading || !scheduledDay || scheduledHour === ""}>
-                    Confirm Schedule
-                  </Button>
-                ) : (
-                  <Button type="submit" variant="outline" disabled={loading}><Send /> {loading ? <Loader loadingText="" additionalStyles="w-4 h-4" /> : 'Send'}</Button>
-                )}
-            </div>
-        </CardFooter>
+        {/* Sticky Action Bar */}
+        <div className="sticky bottom-0 left-0 w-full bg-white border-t z-10 px-6 py-3 flex justify-end gap-2 shadow-sm">
+          <Button type="button" variant="regular" onClick={handleDraft} disabled={loading} aria-label="AI Assist"><BrainCircuit className='w-4 h-4' /> AI</Button>
+          <Button type="button" variant="outline" onClick={() => {
+            setShowSchedule(!showSchedule);
+            if (showSchedule && onClose) onClose();
+          }} disabled={loading} aria-label={showSchedule ? 'Undo Schedule' : 'Schedule'}>
+            <CalendarClock className='w-4 h-4 mr-1' /> {showSchedule ? 'Undo Schedule' : 'Schedule'}
+          </Button>
+          {showSchedule ? (
+            <Button type="button" variant="regular" onClick={handleSchedule} disabled={loading || !scheduledDay || scheduledHour === ""} aria-label="Confirm Schedule">
+              Confirm Schedule
+            </Button>
+          ) : (
+            <Button type="submit" variant="regular" disabled={loading} aria-label="Send Email"><Send /> {loading ? <Loader loadingText="" additionalStyles="w-4 h-4" /> : 'Send'}</Button>
+          )}
+        </div>
         <div className="w-full text-right pr-6 pb-2">
           <span className="text-xs text-gray-400">Powered by <a href="https://resend.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-500">Resend</a></span>
         </div>

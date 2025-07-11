@@ -32,4 +32,4 @@ export const TemplateMarketplaceModal: React.FC<TemplateMarketplaceModalProps> =
       </DialogContent>
     </Dialog>
   );
-}; 
+};

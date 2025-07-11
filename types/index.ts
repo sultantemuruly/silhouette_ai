@@ -124,4 +124,8 @@ export type DraftState = {
   setDate: (date: string) => void;
   showSchedule: boolean;
   setShowSchedule: (showSchedule: boolean) => void;
+  selectedTemplate: { id: number; name: string; html: string; prompt: string; created_at: string; } | null;
+  setSelectedTemplate: (selectedTemplate: { id: number; name: string; html: string; prompt: string; created_at: string; } | null) => void;
+  isGraphicMessage: boolean;
+  setIsGraphicMessage: (isGraphicMessage: boolean) => void;
 }

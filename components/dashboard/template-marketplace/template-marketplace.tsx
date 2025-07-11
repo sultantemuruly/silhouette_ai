@@ -58,6 +58,8 @@ const TemplateMarketplace = () => {
 
   return (
     <>
+      {/* Persistent module title */}
+      <div className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2 mt-4 w-full max-w-5xl mx-auto px-2">Template Marketplace</div>
       {/* Pagination Bar */}
       <div className="w-full max-w-5xl mx-auto flex justify-center mt-4 mb-8">
         <div className="bg-white/90 shadow-lg rounded-lg px-3 py-1.5 flex items-center gap-3">

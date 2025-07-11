@@ -125,6 +125,8 @@ const EmailSchedule = () => {
 
   return (
     <>
+      {/* Persistent module title */}
+      <div className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">Easy Schedule</div>
       {user?.id && user?.emailAddresses?.[0]?.emailAddress && (
         <div className="mb-4 flex justify-end">
           <Button

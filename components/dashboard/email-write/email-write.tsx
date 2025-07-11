@@ -13,7 +13,9 @@ const EmailWrite = () => {
     if (!isLoaded) return <div>Loading user info...</div>;
 
     return (
-      <div>
+      <div className="flex flex-col gap-4">
+        {/* Persistent module title */}
+        <div className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-2">Wise Write</div>
         {user?.id && user?.emailAddresses?.[0]?.emailAddress && (
           <EmailWriteModal
             user_id={user.id}

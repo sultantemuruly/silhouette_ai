@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 
 import { Input } from '@/components/ui/input';
 import dynamic from 'next/dynamic';
-import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 
 const GrapesJSEditor = dynamic(() => import('../email-template/grapesjs-editor'), { ssr: false });
 
@@ -149,7 +149,8 @@ const MessageDraft: React.FC<MessageDraftProps> = ({ user_id, sender }) => {
     const [sendError, setSendError] = useState<string | null>(null);
     const [sendSuccess, setSendSuccess] = useState<string | null>(null);
 
-    const [isGraphicMessage, setIsGraphicMessage] = useState(false);
+    const isGraphicMessage = useMessageStore(state => (state as import('@/types').DraftState).isGraphicMessage);
+    const setIsGraphicMessage = useMessageStore(state => (state as import('@/types').DraftState).setIsGraphicMessage);
     const [showVisualEditor, setShowVisualEditor] = useState(false);
     const [aiHtml, setAiHtml] = useState<string | null>(null);
     const [aiLoading, setAiLoading] = useState(false);
@@ -158,7 +159,8 @@ const MessageDraft: React.FC<MessageDraftProps> = ({ user_id, sender }) => {
     const [templates, setTemplates] = useState<{ id: number; name: string; html: string; prompt: string; created_at: string; }[]>([]);
     const [templatesLoading, setTemplatesLoading] = useState(false);
     const [templatesError, setTemplatesError] = useState('');
-    const [selectedTemplate, setSelectedTemplate] = useState<{ id: number; name: string; html: string; prompt: string; created_at: string; } | null>(null);
+    const selectedTemplate = useMessageStore(state => (state as import('@/types').DraftState).selectedTemplate);
+    const setSelectedTemplate = useMessageStore(state => (state as import('@/types').DraftState).setSelectedTemplate);
 
     // Fetch templates on mount
     React.useEffect(() => {
@@ -387,19 +389,6 @@ const MessageDraft: React.FC<MessageDraftProps> = ({ user_id, sender }) => {
       setIsGraphicMessage(true);
     };
 
-    // When user clicks Compose with Visual Editor
-    const handleOpenVisualEditor = () => {
-      setShowVisualEditor(true);
-      setIsGraphicMessage(true);
-    };
-
-    // When user switches back to plain text
-    const handleSwitchToPlain = () => {
-      setShowVisualEditor(false);
-      setIsGraphicMessage(false);
-      setSelectedTemplate(null);
-    };
-
     // Helper to check if draftMessage is HTML
     const isHtml = (str: string) => /<([A-Za-z][A-Za-z0-9]*)\b[^>]*>(.*?)<\/\1>/.test(str);
 
@@ -418,14 +407,6 @@ const MessageDraft: React.FC<MessageDraftProps> = ({ user_id, sender }) => {
           {/* Template selection and visual editor controls */}
           <div className="flex flex-col gap-2 my-2">
             <div className="flex gap-2 items-center">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleOpenVisualEditor}
-                disabled={!selectedTemplate || !selectedTemplate.id || templatesLoading || loading}
-              >
-                Compose with Visual Editor
-              </Button>
               <select
                 className="border rounded p-2 text-sm"
                 value={selectedTemplate?.id || ''}
@@ -442,32 +423,37 @@ const MessageDraft: React.FC<MessageDraftProps> = ({ user_id, sender }) => {
             </div>
             {/* Show preview if draftMessage is HTML and not editing visually */}
             {!showVisualEditor && isHtml(draftMessage) && isGraphicMessage && (
-              <div className="border rounded bg-gray-50 overflow-hidden min-h-[60px] max-h-[200px] w-full mb-1 mt-2">
-                <div className="w-full h-full" style={{ pointerEvents: 'none' }} dangerouslySetInnerHTML={{ __html: draftMessage }} />
+              <div
+                className="border rounded bg-gray-50 overflow-y-auto min-h-[60px] max-h-[200px] w-full mb-1 mt-2 cursor-pointer hover:shadow-lg transition-shadow"
+                title="Click to edit in Visual Editor"
+                onClick={() => setShowVisualEditor(true)}
+                tabIndex={0}
+                role="button"
+                aria-label="Open Visual Editor"
+                style={{ outline: 'none' }}
+              >
+                <div className="w-full h-full" dangerouslySetInnerHTML={{ __html: draftMessage }} />
               </div>
             )}
           </div>
           {/* Visual Editor Modal */}
-          {showVisualEditor && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-              <div className="bg-white rounded-lg shadow-lg p-4 max-w-3xl w-full relative">
-                <div className="flex justify-between items-center mb-2">
-                  <div className="font-semibold text-lg">Visual Email Editor</div>
-                  <div className="flex gap-2">
-                    <Button size="sm" variant="outline" onClick={handleSwitchToPlain}>Switch to Plain Text</Button>
-                    <Button size="sm" variant="outline" onClick={() => setShowVisualEditor(false)}>Close</Button>
-                  </div>
-                </div>
-                <GrapesJSEditor
-                  initialHtml={selectedTemplate?.html || draftMessage}
-                  onSave={handleVisualSave}
-                  disabled={loading}
-                  externalHtml={aiHtml || undefined}
-                />
-                {aiLoading && <div className="text-blue-600 mt-2">AI is updating the template...</div>}
+          <Dialog open={showVisualEditor} onOpenChange={setShowVisualEditor}>
+            <DialogContent className="max-w-3xl w-full">
+              <div className="flex justify-between items-center mb-2">
+                <DialogTitle>Visual Email Editor</DialogTitle>
+                {/* <div className="flex gap-2">
+                  <Button size="sm" variant="outline" onClick={handleSwitchToPlain}>Switch to Plain Text</Button>
+                </div> */}
               </div>
-            </div>
-          )}
+              <GrapesJSEditor
+                initialHtml={selectedTemplate?.html || draftMessage}
+                onSave={handleVisualSave}
+                disabled={loading}
+                externalHtml={aiHtml || undefined}
+              />
+              {aiLoading && <div className="text-blue-600 mt-2">AI is updating the template...</div>}
+            </DialogContent>
+          </Dialog>
           {/* Message textarea (hide if visual editor or graphic message is active) */}
           {!isGraphicMessage && !showVisualEditor && (
             <div className='pt-2 flex flex-col gap-1'>

@@ -14,6 +14,10 @@ export const useMessageStore = create((set) => ({
   setDate: (date: string) => set({ date }),
   showSchedule: false,
   setShowSchedule: (showSchedule: boolean) => set({ showSchedule }),
+  isGraphicMessage: false,
+  setIsGraphicMessage: (isGraphicMessage: boolean) => set({ isGraphicMessage }),
+  selectedTemplate: null,
+  setSelectedTemplate: (selectedTemplate: { id: number; name: string; html: string; prompt: string; created_at: string; } | null) => set({ selectedTemplate }),
 }))
 
 // Custom hooks for recipient and date
