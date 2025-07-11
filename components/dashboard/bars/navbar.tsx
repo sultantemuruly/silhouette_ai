@@ -44,7 +44,7 @@ export function Navbar() {
           >
             <Bell className="h-6 w-6 text-gray-500 dark:text-gray-300" />
           </button>
-          <UserButton />
+        <UserButton />
         </div>
       </div>
     </header>

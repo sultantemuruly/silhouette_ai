@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { Input } from '@/components/ui/input';
 import dynamic from 'next/dynamic';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import ReactShadow from 'react-shadow';
 
 const GrapesJSEditor = dynamic(() => import('../email-template/grapesjs-editor'), { ssr: false });
 
@@ -432,26 +433,28 @@ const MessageDraft: React.FC<MessageDraftProps> = ({ user_id, sender }) => {
                 aria-label="Open Visual Editor"
                 style={{ outline: 'none' }}
               >
-                <div className="w-full h-full" dangerouslySetInnerHTML={{ __html: draftMessage }} />
+                <ReactShadow.div>
+                  <div className="w-full h-full" style={{ maxHeight: 200, overflowY: 'auto' }} dangerouslySetInnerHTML={{ __html: draftMessage }} />
+                </ReactShadow.div>
               </div>
             )}
           </div>
           {/* Visual Editor Modal */}
           <Dialog open={showVisualEditor} onOpenChange={setShowVisualEditor}>
             <DialogContent className="max-w-3xl w-full">
-              <div className="flex justify-between items-center mb-2">
+                <div className="flex justify-between items-center mb-2">
                 <DialogTitle>Visual Email Editor</DialogTitle>
                 {/* <div className="flex gap-2">
-                  <Button size="sm" variant="outline" onClick={handleSwitchToPlain}>Switch to Plain Text</Button>
+                    <Button size="sm" variant="outline" onClick={handleSwitchToPlain}>Switch to Plain Text</Button>
                 </div> */}
-              </div>
-              <GrapesJSEditor
-                initialHtml={selectedTemplate?.html || draftMessage}
-                onSave={handleVisualSave}
-                disabled={loading}
-                externalHtml={aiHtml || undefined}
-              />
-              {aiLoading && <div className="text-blue-600 mt-2">AI is updating the template...</div>}
+                </div>
+                <GrapesJSEditor
+                  initialHtml={selectedTemplate?.html || draftMessage}
+                  onSave={handleVisualSave}
+                  disabled={loading}
+                  externalHtml={aiHtml || undefined}
+                />
+                {aiLoading && <div className="text-blue-600 mt-2">AI is updating the template...</div>}
             </DialogContent>
           </Dialog>
           {/* Message textarea (hide if visual editor or graphic message is active) */}

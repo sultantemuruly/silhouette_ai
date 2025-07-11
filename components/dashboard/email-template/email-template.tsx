@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic';
 import TemplateGenerate from './template-generate'
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog'
+import ReactShadow from 'react-shadow';
 
 const GrapesJSEditor = dynamic(() => import('./grapesjs-editor'), { ssr: false });
 
@@ -115,7 +116,6 @@ const EmailTemplate = () => {
                       <div className='text-xs text-gray-400'>Created: {new Date(t.created_at).toLocaleString()}</div>
                     </div>
                     <div className='flex flex-col gap-2 items-end'>
-                      {/* <Button size='sm' variant='outline' onClick={() => setPreviewTemplate(t)} className='ml-2'>Open</Button> */}
                       <Button
                         size='sm'
                         variant={t.is_public ? 'secondary' : 'regular'}
@@ -139,20 +139,20 @@ const EmailTemplate = () => {
                     </div>
                   </div>
                   <div
-                    className='border rounded bg-gray-50 w-full flex-1 cursor-pointer hover:shadow-lg transition-shadow'
-                    onClick={() => { console.log('Clicked preview', t); setPreviewTemplate(t); }}
+                    className='relative border rounded bg-gray-50 w-full flex-1 cursor-pointer hover:shadow-lg transition-shadow'
+                    style={{ minHeight: 80, maxHeight: 200, padding: 8 }}
                     title='Click to preview this template'
+                    onClick={() => setPreviewTemplate(t)}
                     tabIndex={0}
-                    role='button'
-                    aria-label='Preview Template'
-                    style={{ outline: 'none' }}
+                    role="button"
+                    aria-label="Preview Template"
                   >
-                    <iframe
-                      srcDoc={t.html}
-                      style={{ width: '100%', border: 'none', minHeight: 200 }}
-                      sandbox=""
-                      title={`template-preview-${t.id}`}
-                    />
+                    <ReactShadow.div>
+                      <div
+                        style={{ width: '100%', height: '100%', maxHeight: 200, overflowY: 'auto' }}
+                        dangerouslySetInnerHTML={{ __html: t.html }}
+                      />
+                    </ReactShadow.div>
                   </div>
                 </div>
               );

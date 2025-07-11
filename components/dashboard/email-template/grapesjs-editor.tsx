@@ -221,7 +221,7 @@ const GrapesJSEditor: React.FC<GrapesJSEditorProps> = ({ initialHtml, onSave, di
       <div className="flex justify-end mb-2 gap-2">
         <div className="relative inline-block text-left" ref={exportMenuRef}>
           <button
-            className="px-3 py-2 bg-gray-200 rounded hover:bg-gray-300 text-sm font-medium"
+            className="px-3 py-2 bg-blue-500 rounded hover:bg-blue-600 text-sm font-medium text-white"
             disabled={exporting}
             type="button"
             id="export-menu"

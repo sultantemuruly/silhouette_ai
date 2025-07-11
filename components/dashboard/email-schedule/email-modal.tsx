@@ -247,27 +247,27 @@ const EmailModal: React.FC<EmailModalProps> = ({
               </div>
             </div>
             <div className="flex justify-between items-center gap-2 mt-4">
-              <div className="flex items-center gap-2">
-                {isPending && !editMode && (
-                  <>
+                <div className="flex items-center gap-2">
+                  {isPending && !editMode && (
+                    <>
                     <Button variant="regular" size="default" onClick={() => onEditMode(true)} aria-label="Edit Email">Edit</Button>
                     <Button variant="destructive" size="default" onClick={onDelete} aria-label="Delete Email">Delete</Button>
-                  </>
-                )}
-                {isPending && editMode && (
-                  <>
+                    </>
+                  )}
+                  {isPending && editMode && (
+                    <>
                     <Button variant="regular" size="default" onClick={onEdit} aria-label="Save Changes">Save</Button>
                     <Button variant="outline" size="default" onClick={onCancelEdit} aria-label="Cancel Edit">Cancel</Button>
-                  </>
-                )}
-              </div>
-              <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
-                status === 'pending' ? 'bg-yellow-200 text-yellow-900' :
-                status === 'sent' ? 'bg-green-200 text-green-900' :
-                'bg-red-200 text-red-900'
-              }`}>
-                {status.charAt(0).toUpperCase() + status.slice(1)}
-              </span>
+                    </>
+                  )}
+                </div>
+                <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${
+                  status === 'pending' ? 'bg-yellow-200 text-yellow-900' :
+                  status === 'sent' ? 'bg-green-200 text-green-900' :
+                  'bg-red-200 text-red-900'
+                }`}>
+                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                </span>
             </div>
           </DialogContent>
         )}

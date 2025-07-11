@@ -57,8 +57,8 @@ export function Sidebar({ onCategoryChange }: SidebarProps) {
             <Button
               key={item.href}
               onClick={() => {
-                setCategory(item.category);
-                if (onCategoryChange) onCategoryChange(item.category);
+              setCategory(item.category);
+              if (onCategoryChange) onCategoryChange(item.category);
               }}
               className={cn(
                 "flex items-center px-3 py-2 rounded-md relative group transition-colors",

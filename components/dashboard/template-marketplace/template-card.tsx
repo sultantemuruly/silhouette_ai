@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactShadow from 'react-shadow';
 
 interface TemplateCardProps {
   name: string;
@@ -19,7 +20,9 @@ export const TemplateCard: React.FC<TemplateCardProps> = ({ name, html, prompt, 
       <div className="text-sm text-gray-500 mb-1">By: {first_name} {last_name}</div>
       <div className="text-xs text-gray-700 mb-2 italic">Prompt: {prompt}</div>
       <div className="border rounded bg-gray-50 p-2 overflow-auto" style={{ minHeight: 80, maxHeight: 200 }}>
-        <div dangerouslySetInnerHTML={{ __html: html }} />
+        <ReactShadow.div>
+          <div style={{ width: '100%', height: '100%', maxHeight: 200, overflowY: 'auto' }} dangerouslySetInnerHTML={{ __html: html }} />
+        </ReactShadow.div>
       </div>
     </div>
   );

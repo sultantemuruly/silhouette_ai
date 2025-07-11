@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { BrainCircuit, Send, CalendarClock } from 'lucide-react'
 import { Loader } from '@/components/ui/loader'
+import ReactShadow from 'react-shadow';
 
 const GrapesJSEditor = dynamic(() => import('../email-template/grapesjs-editor'), { ssr: false });
 
@@ -380,25 +381,27 @@ export const EmailWriteModal: React.FC<EmailWriteModalProps> = ({ refreshSchedul
                       aria-label="Open Visual Editor"
                       style={{ outline: 'none' }}
                     >
-                      <div className="w-full h-full" dangerouslySetInnerHTML={{ __html: draftMessage }} />
+                      <ReactShadow.div>
+                        <div className="w-full h-full" style={{ maxHeight: 600, overflowY: 'auto' }} dangerouslySetInnerHTML={{ __html: draftMessage }} />
+                      </ReactShadow.div>
                     </div>
                   )}
                 </div>
                 {/* Visual Editor Modal */}
                 <Dialog open={showVisualEditor} onOpenChange={setShowVisualEditor}>
                   <DialogContent className="max-w-3xl w-full">
-                    <div className="flex justify-between items-center mb-2">
+                      <div className="flex justify-between items-center mb-2">
                       <DialogTitle>Visual Email Editor</DialogTitle>
                       {/* <div className="flex gap-2">
-                        <Button size="sm" variant="outline" onClick={handleSwitchToPlain}>Switch to Plain Text</Button>
-                        <Button size="sm" variant="outline" onClick={() => setShowVisualEditor(false)}>Close</Button>
+                          <Button size="sm" variant="outline" onClick={handleSwitchToPlain}>Switch to Plain Text</Button>
+                          <Button size="sm" variant="outline" onClick={() => setShowVisualEditor(false)}>Close</Button>
                       </div> */}
-                    </div>
-                    <GrapesJSEditor
-                      initialHtml={visualHtml || draftMessage}
-                      onSave={handleVisualSave}
-                      disabled={loading}
-                    />
+                      </div>
+                      <GrapesJSEditor
+                        initialHtml={visualHtml || draftMessage}
+                        onSave={handleVisualSave}
+                        disabled={loading}
+                      />
                   </DialogContent>
                 </Dialog>
                 {/* Message textarea (hide if visual editor or graphic message is active) */}
@@ -508,20 +511,20 @@ export const EmailWriteModal: React.FC<EmailWriteModalProps> = ({ refreshSchedul
         {/* Sticky Action Bar */}
         <div className="sticky bottom-0 left-0 w-full bg-white border-t z-10 px-6 py-3 flex justify-end gap-2 shadow-sm">
           <Button type="button" variant="regular" onClick={handleDraft} disabled={loading} aria-label="AI Assist"><BrainCircuit className='w-4 h-4' /> AI</Button>
-          <Button type="button" variant="outline" onClick={() => {
-            setShowSchedule(!showSchedule);
-            if (showSchedule && onClose) onClose();
+                <Button type="button" variant="outline" onClick={() => {
+                  setShowSchedule(!showSchedule);
+                  if (showSchedule && onClose) onClose();
           }} disabled={loading} aria-label={showSchedule ? 'Undo Schedule' : 'Schedule'}>
-            <CalendarClock className='w-4 h-4 mr-1' /> {showSchedule ? 'Undo Schedule' : 'Schedule'}
-          </Button>
-          {showSchedule ? (
+                  <CalendarClock className='w-4 h-4 mr-1' /> {showSchedule ? 'Undo Schedule' : 'Schedule'}
+                </Button>
+                {showSchedule ? (
             <Button type="button" variant="regular" onClick={handleSchedule} disabled={loading || !scheduledDay || scheduledHour === ""} aria-label="Confirm Schedule">
-              Confirm Schedule
-            </Button>
-          ) : (
+                    Confirm Schedule
+                  </Button>
+                ) : (
             <Button type="submit" variant="regular" disabled={loading} aria-label="Send Email"><Send /> {loading ? <Loader loadingText="" additionalStyles="w-4 h-4" /> : 'Send'}</Button>
-          )}
-        </div>
+                )}
+            </div>
         <div className="w-full text-right pr-6 pb-2">
           <span className="text-xs text-gray-400">Powered by <a href="https://resend.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-500">Resend</a></span>
         </div>

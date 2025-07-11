@@ -41,6 +41,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-markdown": "^10.1.0",
+    "react-shadow": "^20.6.0",
     "react-textarea-autosize": "^8.5.9",
     "remark-gfm": "^4.0.1",
     "resend": "^4.6.0",

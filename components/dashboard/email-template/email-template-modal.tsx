@@ -1,11 +1,11 @@
 import React from 'react';
+import ReactShadow from 'react-shadow';
 
 interface EmailTemplateModalProps {
   html: string;
-  id: number | string;
 }
 
-const EmailTemplateModal: React.FC<EmailTemplateModalProps> = ({ html, id }) => (
+const EmailTemplateModal: React.FC<EmailTemplateModalProps> = ({ html }) => (
   <div
     style={{
       background: '#fff',
@@ -16,12 +16,12 @@ const EmailTemplateModal: React.FC<EmailTemplateModalProps> = ({ html, id }) => 
       boxShadow: '0 8px 32px rgba(0,0,0,0.18)',
     }}
   >
-    <iframe
-      srcDoc={html}
-      style={{ width: '100%', border: 'none', minHeight: 400, borderRadius: 8 }}
-      sandbox=""
-      title={`template-modal-${id}`}
-    />
+    <ReactShadow.div>
+      <div
+        style={{ width: '100%', minHeight: 400, maxHeight: 600, borderRadius: 8, overflowY: 'auto' }}
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
+    </ReactShadow.div>
   </div>
 );
 
