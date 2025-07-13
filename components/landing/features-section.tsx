@@ -1,4 +1,11 @@
-import { Mail, Search, Star, Sparkles, Calendar, LayoutTemplate } from "lucide-react";
+import {
+  Mail,
+  Search,
+  Star,
+  Sparkles,
+  Calendar,
+  LayoutTemplate,
+} from "lucide-react";
 import {
   Card,
   CardContent,
@@ -10,6 +17,12 @@ import {
 export function FeaturesSection() {
   const features = [
     {
+      icon: <LayoutTemplate className="h-6 w-6" />,
+      title: "Fancy Template",
+      description:
+        "Create or generate beautiful email templates for any occasion. Personalize and reuse with ease.",
+    },
+    {
       icon: <Sparkles className="h-6 w-6" />,
       title: "Wise Write",
       description:
@@ -20,12 +33,6 @@ export function FeaturesSection() {
       title: "Easy Schedule",
       description:
         "Schedule emails to send later or set up follow-ups with just a click. Stay on top of your communication, effortlessly.",
-    },
-    {
-      icon: <LayoutTemplate className="h-6 w-6" />,
-      title: "Fancy Template",
-      description:
-        "Create or generate beautiful email templates for any occasion. Personalize and reuse with ease.",
     },
   ];
 
@@ -58,7 +65,8 @@ export function FeaturesSection() {
             AI Email Writing & Templates, Simplified
           </h2>
           <p className="max-w-[700px] text-muted-foreground md:text-xl/relaxed">
-            Silhouette helps you write, schedule, and design emails with the power of AI. More features coming soon!
+            Silhouette helps you write, schedule, and design emails with the
+            power of AI. More features coming soon!
           </p>
         </div>
         <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 mt-12">

@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "../ui/button";
-import { ArrowRight, Clock, Mail, Sparkles } from "lucide-react";
+import { ArrowRight, Mail, Sparkles } from "lucide-react";
 import { useClerk, SignedIn, SignedOut } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { trackGtag } from "@/lib/gtag";
@@ -11,7 +11,7 @@ export function HeroSection() {
   const router = useRouter();
 
   const handleSignUpClick = () => {
-    trackGtag('get_started_click', 'auth');
+    trackGtag("get_started_click", "auth");
     openSignUp();
   };
   const handleDashboardNav = () => {
@@ -32,7 +32,9 @@ export function HeroSection() {
               </p>
             </div>
             <p className="text-lg text-muted-foreground">
-              Instantly craft professional emails and stunning templates with AI. Write, schedule, and send with confidence—no more writer’s block or formatting headaches.
+              Instantly craft professional emails and stunning templates with
+              AI. Write, schedule, and send with confidence—no more writer’s
+              block or formatting headaches.
             </p>
             <div className="flex flex-col sm:flex-row gap-3">
               <SignedOut>
@@ -61,7 +63,7 @@ export function HeroSection() {
                 See How It Works
               </Button> */}
             </div>
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            {/* <div className="flex items-center gap-4 text-sm text-muted-foreground">
               <div className="flex items-center gap-1">
                 <Clock className="h-4 w-4" />
                 <span>14-day free trial</span>
@@ -70,7 +72,7 @@ export function HeroSection() {
                 <Mail className="h-4 w-4" />
                 <span>No credit card required</span>
               </div>
-            </div>
+            </div> */}
           </div>
           <div className="relative">
             <div className="relative rounded-lg overflow-hidden border bg-background shadow-xl">
@@ -88,25 +90,11 @@ export function HeroSection() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between border-b pb-2">
                     <div className="font-medium">Compose</div>
-                    <div className="text-sm text-muted-foreground">AI Powered</div>
+                    <div className="text-sm text-muted-foreground">
+                      AI Powered
+                    </div>
                   </div>
                   <div className="space-y-3">
-                    {/* AI Email Writing Example */}
-                    <div className="flex items-start gap-3 p-3 rounded-md border bg-card">
-                      <div className="h-8 w-8 rounded-full bg-blue-600/10 flex items-center justify-center text-blue-600">
-                        <Sparkles className="h-4 w-4" />
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <div className="font-medium text-black">AI Email Writing</div>
-                          <div className="text-xs text-slate-900">Instant Draft</div>
-                        </div>
-                        <div className="text-sm text-black">
-                          &quot;Hi team, just a quick update on our project...&quot;<br />
-                          <span className="text-blue-600">AI continues your message with clarity and professionalism.</span>
-                        </div>
-                      </div>
-                    </div>
                     {/* Template Generation Example */}
                     <div className="flex items-start gap-3 p-3 rounded-md border bg-card">
                       <div className="h-8 w-8 rounded-full bg-blue-600/10 flex items-center justify-center text-blue-600">
@@ -114,11 +102,41 @@ export function HeroSection() {
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center justify-between">
-                          <div className="font-medium text-black">Template Generation</div>
-                          <div className="text-xs text-slate-900">1-Click Design</div>
+                          <div className="font-medium text-black">
+                            Template Generation
+                          </div>
+                          <div className="text-xs text-slate-900">
+                            1-Click Design
+                          </div>
                         </div>
                         <div className="text-sm text-black">
-                          Choose a template or let AI design one for you—perfect for every occasion.
+                          Choose a template or let AI design one for you—perfect
+                          for every occasion.
+                        </div>
+                      </div>
+                    </div>
+                    {/* AI Email Writing Example */}
+                    <div className="flex items-start gap-3 p-3 rounded-md border bg-card">
+                      <div className="h-8 w-8 rounded-full bg-blue-600/10 flex items-center justify-center text-blue-600">
+                        <Sparkles className="h-4 w-4" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <div className="font-medium text-black">
+                            AI Email Writing
+                          </div>
+                          <div className="text-xs text-slate-900">
+                            Instant Draft
+                          </div>
+                        </div>
+                        <div className="text-sm text-black">
+                          &quot;Hi team, just a quick update on our
+                          project...&quot;
+                          <br />
+                          <span className="text-blue-600">
+                            AI continues your message with clarity and
+                            professionalism.
+                          </span>
                         </div>
                       </div>
                     </div>

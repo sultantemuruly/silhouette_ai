@@ -1,5 +1,13 @@
 import { NavItem } from "@/types";
-// import { Inbox, Star, Search, PenLine, Calendar, LayoutTemplate } from "lucide-react";
+import {
+  Inbox,
+  Star,
+  Search,
+  PenLine,
+  Calendar,
+  LayoutTemplate,
+  ShoppingBag,
+} from "lucide-react";
 
 // export const navItemsActive: NavItem[] = [
 //   {
@@ -59,29 +67,41 @@ import { NavItem } from "@/types";
 
 export const navItemsActive: NavItem[] = [
   {
-    label: "Wise Write",
-    href: "/mail/write",
-    category: "wise-write",
-    icon: <span className="ml-auto text-xs font-medium text-yellow-600">✍</span>,
-  },
-  {
-    label: "Easy Schedule",
-    href: "/mail/schedule",
-    category: "easy-schedule",
-    icon: <span className="ml-auto text-xs font-medium text-black">📅</span>,
-  },
-  {
     label: "Fancy Template",
     href: "/mail/template",
     category: "fancy-template",
-    icon: <span className="ml-auto text-xs font-medium text-yellow-600">🖼️</span>,
+    icon: (
+      // <span className="ml-auto text-xs font-medium text-yellow-600">🖼️</span>
+      <LayoutTemplate />
+    ),
   },
   {
     label: "Template Marketplace",
     href: "/mail/marketplace",
     category: "template-marketplace",
-    icon: <span className="ml-auto text-xs font-medium text-yellow-600">🛍️</span>,
-  }
+    icon: (
+      // <span className="ml-auto text-xs font-medium text-yellow-600">🛍️</span>
+      <ShoppingBag />
+    ),
+  },
+  {
+    label: "Wise Write",
+    href: "/mail/write",
+    category: "wise-write",
+    icon: (
+      // <span className="ml-auto text-xs font-medium text-yellow-600">✍</span>
+      <PenLine />
+    ),
+  },
+  {
+    label: "Easy Schedule",
+    href: "/mail/schedule",
+    category: "easy-schedule",
+    icon: (
+      // <span className="ml-auto text-xs font-medium text-black">📅</span>
+      <Calendar />
+    ),
+  },
 ];
 
 export const navItemsComingSoon: NavItem[] = [
@@ -89,18 +109,27 @@ export const navItemsComingSoon: NavItem[] = [
     label: "All Mail",
     href: "/mail/all",
     category: "all-mail",
-    icon: <span className="ml-auto text-xs font-medium text-yellow-600">📫</span>,
+    icon: (
+      //  <span className="ml-auto text-xs font-medium text-yellow-600">📫</span>
+      <Inbox />
+    ),
   },
   {
     label: "Smart Search",
     href: "/mail/smart-search",
     category: "smart-search",
-    icon: <span className="ml-auto text-xs font-medium text-black">🔍</span>,
+    icon: (
+      // <span className="ml-auto text-xs font-medium text-black">🔍</span>
+      <Search />
+    ),
   },
   {
     label: "Important",
     href: "/mail/important",
     category: "important",
-    icon: <span className="ml-auto text-xs font-medium text-yellow-600">❗</span>,
-  }
+    icon: (
+      // <span className="ml-auto text-xs font-medium text-yellow-600">❗</span>
+      <Star />
+    ),
+  },
 ];
