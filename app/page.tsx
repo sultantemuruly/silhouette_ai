@@ -12,10 +12,10 @@ export default function Home() {
       <Navbar />
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <HeroSection />
-        <section className="py-20 bg-black/95">
+        <section className="py-20">
           <div className="container px-4 md:px-6 flex flex-col items-center">
             <div className="w-full max-w-3xl aspect-video rounded-lg overflow-hidden border shadow-xl bg-black">
-              <YouTubeEmbed videoId="YOKcO_PFCVE"/>
+              <YouTubeEmbed videoId="YOKcO_PFCVE" />
             </div>
           </div>
         </section>
