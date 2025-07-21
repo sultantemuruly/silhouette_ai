@@ -46,3 +46,11 @@ export const email_templates = pgTable("email_templates", {
   created_at: timestamp("created_at").defaultNow().notNull(),
   is_public: boolean("is_public").notNull().default(false),
 });
+
+export const blogs = pgTable("blogs", {
+  id: serial("id").primaryKey(),
+  title: varchar("title", {length:128}).notNull(),
+  content: text().notNull(),
+  created_at: timestamp("created_at").defaultNow().notNull(),
+  status: varchar("status", {length:16}).notNull().default('published'),
+})
