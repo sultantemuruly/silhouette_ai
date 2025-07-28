@@ -1,5 +1,5 @@
 // @ts-expect-error: stopword package has no TypeScript types available
-import sw from "stopword";
+import * as sw from "stopword";
 import { AzureChatOpenAI } from "@langchain/openai";
 import nlp from "compromise";
 
@@ -15,7 +15,8 @@ export function extractOrganizationsFromQuery(query: string): string[] {
     orgs = doc.match('#Noun').if('#TitleCase').out('array');
   }
   // Remove stopwords and duplicates
-  return Array.from(new Set(sw.removeStopwords(orgs.map(o => o.trim()))));
+  const cleanedOrgs = orgs.map(o => o.trim()).filter(Boolean);
+  return Array.from(new Set(sw.removeStopwords(cleanedOrgs)));
 }
 
 // LLM-based keyword extraction (unchanged)
@@ -37,12 +38,11 @@ async function llmExtractKeywords(query: string): Promise<string[] | null> {
     ]);
     const text = (response.content as string).trim();
     // Split by comma, clean up, and filter out stopwords
-    return sw.removeStopwords(
-      text
-        .split(",")
-        .map(k => k.trim())
-        .filter(Boolean)
-    );
+    const keywords = text
+      .split(",")
+      .map(k => k.trim())
+      .filter(Boolean);
+    return sw.removeStopwords(keywords);
   } catch (err) {
     console.error("LLM keyword extraction failed:", err);
     return null;
@@ -52,9 +52,9 @@ async function llmExtractKeywords(query: string): Promise<string[] | null> {
 // Fallback: simple regex/stopword removal using stopword package
 function fallbackExtractKeywords(query: string): string[] {
   const cleaned = query.toLowerCase().replace(/[?.,!]/g, "");
-  let words = cleaned.split(/\s+/).filter(Boolean);
-  words = sw.removeStopwords(words);
-  return Array.from(new Set(words));
+  const words = cleaned.split(/\s+/).filter(Boolean);
+  const filteredWords = sw.removeStopwords(words);
+  return Array.from(new Set(filteredWords));
 }
 
 // Main exported function: returns only keywords (for legacy use)
