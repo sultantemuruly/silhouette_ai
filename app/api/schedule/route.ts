@@ -21,9 +21,9 @@ export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
         console.log('Received POST /api/schedule body:', body);
-        const { user_id, sender, recipient, subject, content, scheduled_date, timezone } = body;
-        if (!user_id || !sender || !recipient || !subject || !content || !scheduled_date) {
-            console.log('Missing required fields:', { user_id, sender, recipient, subject, content, scheduled_date });
+        const { user_id, sender, recipients, subject, content, scheduled_date, timezone } = body;
+        if (!user_id || !sender || !recipients || !recipients.length || !subject || !content || !scheduled_date) {
+            console.log('Missing required fields:', { user_id, sender, recipients, subject, content, scheduled_date });
             return NextResponse.json({ error: "All fields are required" }, { status: 400 });
         }
         let effectiveZone = timezone;
@@ -44,17 +44,22 @@ export async function POST(request: NextRequest) {
         } else {
             scheduledDateUtc = new Date(scheduled_date);
         }
-        console.log('Inserting scheduled email:', { user_id, sender, recipient, subject, content, scheduled_date, timezone, scheduledDateUtc });
-        const inserted = await db.insert(scheduled_emails).values({
-            user_id,
-            sender,
-            recipient,
-            subject,
-            content,
-            scheduled_date: scheduledDateUtc,
-            status: 'pending',
-            timezone,
-        });
+        // Insert one record per recipient
+        const inserted = [];
+        for (const recipient of recipients) {
+            console.log('Inserting scheduled email:', { user_id, sender, recipient, subject, content, scheduled_date, timezone, scheduledDateUtc });
+            const result = await db.insert(scheduled_emails).values({
+                user_id,
+                sender,
+                recipient,
+                subject,
+                content,
+                scheduled_date: scheduledDateUtc,
+                status: 'pending',
+                timezone,
+            });
+            inserted.push(result);
+        }
         return NextResponse.json(inserted);
     } catch (error) {
         console.error('Error in POST /api/schedule:', error);

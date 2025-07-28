@@ -8,7 +8,7 @@ import { Separator } from "@/components/ui/separator";
 import { HelpCircle } from "lucide-react";
 
 import { useCategoryStore } from "@/stores/useCategoryStore";
-import { navItemsActive, navItemsComingSoon } from "@/constants/bars";
+import { navItemsActive, /* navItemsComingSoon */ } from "@/constants/bars";
 
 interface SidebarProps {
   onCategoryChange?: (category: string) => void;
@@ -52,7 +52,7 @@ export function Sidebar({ onCategoryChange }: SidebarProps) {
           ))}
 
           <Separator className="my-4" />
-          <div className="text-sm font-medium">Coming Soon!</div>
+          {/* <div className="text-sm font-medium">Coming Soon!</div>
           {navItemsComingSoon.map((item) => (
             <Button
               key={item.href}
@@ -74,7 +74,7 @@ export function Sidebar({ onCategoryChange }: SidebarProps) {
               <span className="ml-3 text-sm font-medium">{item.label}</span>
               {item.badge}
             </Button>
-          ))}
+          ))} */}
         </nav>
       </ScrollArea>
       {/* Settings/Help placeholder at the bottom */}

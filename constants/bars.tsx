@@ -102,6 +102,33 @@ export const navItemsActive: NavItem[] = [
       <Calendar />
     ),
   },
+  {
+    label: "All Mail",
+    href: "/mail/all",
+    category: "all-mail",
+    icon: (
+      //  <span className="ml-auto text-xs font-medium text-yellow-600">📫</span>
+      <Inbox />
+    ),
+  },
+  {
+    label: "Smart Search",
+    href: "/mail/smart-search",
+    category: "smart-search",
+    icon: (
+      // <span className="ml-auto text-xs font-medium text-black">🔍</span>
+      <Search />
+    ),
+  },
+  {
+    label: "Important",
+    href: "/mail/important",
+    category: "important",
+    icon: (
+      // <span className="ml-auto text-xs font-medium text-yellow-600">❗</span>
+      <Star />
+    ),
+  },
 ];
 
 export const navItemsComingSoon: NavItem[] = [

@@ -116,8 +116,8 @@ export type DraftState = {
   setIsDraft: (isDraft: boolean) => void;
   draftMessage: string;
   setDraftMessage: (draftMessage: string) => void;
-  draftTitle: string;
-  setDraftTitle: (draftTitle: string) => void;
+  draftSubject: string;
+  setDraftSubject: (draftSubject: string) => void;
   recipient: string;
   setRecipient: (recipient: string) => void;
   date: string;
